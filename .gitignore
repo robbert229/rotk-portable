@@ -1,0 +1,15 @@
+# Copyrighted game assets — local working copies only, never commit.
+# Regenerate with tools/unpac.py (docs/formats/index.md "Samples").
+assets/samples/
+out/
+*.pac
+*.scw
+*.txw
+*.GEO
+*.geo
+*.avi
+*.iso
+
+# Python
+__pycache__/
+*.py[cod]
