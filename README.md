@@ -21,6 +21,7 @@ Established from PE headers, CodeView debug directory, embedded source paths, an
 - **Compiler: Microsoft Visual C++ .NET 2002 (MSVC 7.0 / cl 13.00)**
   - PE optional-header linker stamp **7.00** (`link.exe` 7.00 of VS .NET 2002); EA-built helpers (`eauninstall.exe`, `rotk_uninst.exe`) share the same 7.00 stamp, while bundled middleware is linker 6.00 (VS 6) — consistent, not SafeDisc noise.
   - Statically linked MSVC CRT (`Microsoft Visual C++ Runtime Library` asserts; `CorExitProcess` + `mscoree.dll` = VC7 CRT startup's managed-app probe, **not** evidence of .NET — CLR data directory is zero).
+  - **Rich header (observed):** C compiler `Utc13_C` build **13.00.9466** (VS .NET 2002 RTM) × 563 objects, C++ × 10, MASM 7.00 × 43, linker 7.00.9466. Matching toolchain: VS .NET 2002 RTM, *not* SP1 (13.00.9955). The project recompiles with [`archaic-msvc/msvc700`](https://github.com/archaic-msvc/msvc700) (13.00.9466, fetched locally, never committed) and targets byte-matching functions. Details: [`docs/roadmap.md`](docs/roadmap.md) WP-0.6 / R-2.
   - PDB: `f:\EAThirdPerson\lotr\rotk\code\Project\VisualStudio\Win\EN\ROTK_EN_Fin_Win_DotNet.pdb` (RSDS, GUID `eced3210-3532-49d3-a2bb-a850a135a08a`, age 0x2f). "DotNet" here denotes the Visual Studio .NET build configuration; the image is fully native.
 - **Engine: in-house "EAThirdPerson" engine (console-first, PC-ported)**
   - Recovered source tree `EAThirdPerson\lotr\rotk\code\` with modules: `Kernel` (EntityManager, VisualEntity, MessageManager, TriggerManager…), `Hi-Rendering` / `Lo-Rendering` (shader objects incl. `WeightedSkinCalc_SSE`), `Animation/ChrCntl_AnimLib` (SKA skeletal format), `Actors`, `Physics`, `Collision`, `SFX` (particle effects), `DTB` (data tables: Weapon, Abilities, Upgrade…), `UI` (Hud), `Camera`, `Lib` (UObject, UHeap, UMemPool, UBTree), `RCMP` (audio codec, `rcmp_mad_codec.c`), and a `LL` platform-abstraction layer with `_Win.c` backend variants (console `Memory_Card` layer ported to Win).
@@ -58,6 +59,9 @@ Analyzed in [`docs/analysis/companion-dlls.md`](docs/analysis/companion-dlls.md)
 `FileParser.dll` verdict: AVI splitter of the DivX stack, **not** an archive reader.
 
 ## Decompilation status
+
+Full plan, work packages and status board: [`docs/roadmap.md`](docs/roadmap.md). Rules for agents working on it: [`docs/agent-playbook.md`](docs/agent-playbook.md).
+
 
 - [x] Target identity & toolchain identification (this document)
 - [x] Companion DLL analysis — C8/D1–D4 (dossiers, headers, FMV pipeline, FileParser verdict)

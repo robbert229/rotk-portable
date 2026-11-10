@@ -31,5 +31,16 @@ chore: update .gitignore for extracted sample trees
 
 - No copyrighted game assets in commits; samples stay in gitignored
   `assets/samples/` / `out/` and are regenerated with `tools/unpac.py`.
-- Tools stay dependency-free `python3` (stdlib only) and never write to the game prefix.
+- Tools in `tools/` stay dependency-free `python3` (stdlib only) and never write to the game prefix.
+  Exceptions (decision D-4): Ghidra scripts under `re/ghidra/` (PyGhidra/Java, run inside Ghidra)
+  a top-level `Makefile` (GNU make) as the build front door, and CMake for the `src/` build.
+  The CMake MSVC 7.0 preset compiles through `tools/msvc.py`, which runs the toolchain under Wine.
+- The repo is public and publishes reconstructed C source (decision D-6). Never commit original
+  game bytes, dumped/unpacked executables, raw decompiler/disassembly listings, or the MSVC toolchain.
 - Every claim in a spec carries an **observed** / **inferred** / **unknown** tag.
+
+## Decompilation work packages
+
+Work is organised as work packages in [docs/roadmap.md](docs/roadmap.md). Before starting
+one, read [docs/agent-playbook.md](docs/agent-playbook.md): environment, evidence format,
+naming, definition of done, and the handoff report shape.
