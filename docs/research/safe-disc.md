@@ -301,3 +301,103 @@ with PE-sieve (dumps modified regions without needing exact OEP) and reconstruct
 - Softpedia/abandonware download pages were checked only at search-snippet level; original
   circa-2003 tool pages (SafeDiscCleaner homepages) are dead — no verified current
   download location.
+
+## WP-1.1 — Static fingerprint of the retail executable
+
+[observed: ROTK.exe SHA-256
+`95af128c93c63fe5d847609b45f3ba146af56f01c76215389bd1aabf0eb2a5a2`,
+size `0x2bdb80`. VAs in this addendum refer to this packed image.
+The PE32 optional header gives image base `0x400000`, OS and subsystem
+versions 4.0, and Windows GUI subsystem (2), superseding the earlier
+description of those fields as scrambled.]
+
+[inferred: the retail executable uses **SafeDisc 3.10.020**.
+The [BurnOutSharp detector](https://github.com/claunia/BurnOutSharp/blob/master/BurnOutSharp/ProtectionFind.cs#L1303)
+defines the two-space `BoG_` marker and falls back from marker+20 to
+marker+32 when the first major version is zero. The retail bytes match
+that layout.]
+
+[observed: ROTK.exe file+0xFD4 contains `BoG_ *90.0&!!  Yy>`
+(two spaces before `Yy>`), in PE header padding before `.text`
+at file+0x1000. Little-endian DWORDs at file+0xFE8 (+20 decimal)
+are 0, 0, 0. At file+0xFF4 (+32 decimal), 0xFF8 and 0xFFC
+they are 3, 10 and 20 respectively.]
+
+[observed: the masked entry-point signature from the
+[Detect It Easy SafeDisc rule](https://github.com/horsicq/Detect-It-Easy/blob/master/db/PE/protector_SafeDisc.2.sg)
+matches ROTK.exe at packed VA 0x009C305E (file+0x19C05E).
+Its structural rule also matches: the last two sections are
+`stxt774` and `stxt371`, and `stxt371` holds both the entry point
+and import directory. Both checks identify the family and the rule
+assigns neither a version.]
+
+### Companion files and search coverage
+
+- [observed: DrvMgt.dll SHA-256
+  `310f5c3c861bcafcf430b3479aff626289230ec56192d7aaf90400d2f449991e`.
+  The resource directory entry is zero. ASCII labels at file+0x66D6,
+  +0x6848 and +0x68CD name `drvmgt.dll`, `DRVMGT` and `SECDRV.SYS`.
+  The full-file ASCII and UTF-16LE string scans for dotted version
+  triples found none.] [unknown: DrvMgt.dll build.]
+- [observed: SECDRV.SYS SHA-256
+  `a85c63f5fb99c8efc9ea3be600629ba611c22c2684c380f49cce03572ad7afc1`.
+  RT_VERSION (16/1/1033) spans file+0x2600 through +0x2A2D.
+  The UTF-16LE FileDescription at +0x282C is `Macrovision SECURITY Driver`.
+  FileVersion at +0x2884 is `3.19.000`, and ProductVersion at +0x29E4 begins
+  `3.19.000` and includes the date `2003/03/19`. Fixed file and product
+  versions at +0x2630 and +0x2638 both decode to 3.11.0.0 when read as
+  decimal 16-bit fields (MS DWORD 0x0003000B, LS DWORD 0). The 3.19.000
+  string identifies the driver resource. The game fingerprint comes from
+  the separate record in ROTK.exe.]
+- [observed: searched all bytes of the three files, including headers,
+  padding and overlays, for ASCII and UTF-16LE `BoG_`, the single-space
+  `BoG_ *90.0&!! Yy>`, `SD2`, `SafeDisc`, `Macrovision`, `C-Dilla`,
+  `DrvMgt`, `SECDRV` and `DPLAYERX`, case-insensitively. The full
+  two-space ASCII marker occurs once in ROTK.exe and the `BoG_` prefix
+  is absent from the companions. ROTK.exe has one case-insensitive
+  `SD2` hit, within the high-entropy `.text` at file+0x4B3FF, and no
+  uppercase `SD2` or `SafeDisc` hit. Driver-name and vendor hits in the
+  companions are consistent with the offsets above.]
+
+### Packed section map
+
+[observed: ROTK.exe has eight 40-byte section headers beginning at
+file+0x210. Numeric columns below come from those headers. Entropy is
+Shannon bits per byte over each full raw range, including file-alignment
+padding and excluding virtual zero-fill. Sizes, offsets and flags are hex.
+R/W/X denote the header memory flags.]
+
+| Name | Packed VA | File start | Raw size | Virtual size | Characteristics | Entropy | Role and evidence |
+| --- | ---: | ---: | ---: | ---: | --- | ---: | --- |
+| `.text` | 0x00401000 | 0x1000 | 0x134000 | 0x133C58 | `0x60000020` RX code | 7.9987 | [inferred: protected game code, based on executable mapping and near-uniform byte distribution across this raw range.] |
+| `.rdata` | 0x00535000 | 0x135000 | 0x25000 | 0x24DEC | `0x40000040` R initialized data | 5.6274 | [observed: readable game source paths, e.g. file+0x1362F4, and the debug directory at file+0x135220.] |
+| `.data` | 0x0055A000 | 0x15A000 | 0x1F000 | 0x446FB4 | `0xC0000040` RW initialized data | 7.9734 | [observed: writable data with a large virtual tail.] [inferred: protected initialized game data in the high-entropy raw range.] |
+| `.data1` | 0x009A1000 | 0x179000 | 0x1000 | 0x900 | `0xC0000040` RW initialized data | 5.4233 | [observed: its first 0x900 bytes have entropy 7.9125. The PE resource directory RVA starts here, with the named `.rsrc` section one page later.] [unknown: purpose of this early resource-directory page.] |
+| `.rsrc` | 0x009A2000 | 0x17A000 | 0x6000 | 0x5AE6 | `0x40000040` R initialized data | 3.5133 | [observed: lies within the resource directory's declared RVA span, which starts at 0x5A2000 in `.data1` and has size 0x5AA0.] |
+| Eight ASCII spaces | 0x009A8000 | 0x180000 | 0x18000 | 0x173C8 | `0x42000040` R discardable initialized data | 6.0067 | [observed: file+0x180000 starts a sequence of 345 PE-shaped relocation blocks ending at file+0x1930A0, with 37,441 type-3 and 171 type-0 entries. The PE base-relocation directory is zero.] [inferred: retained relocation table.] [unknown: whether the stub consumes it and the purpose of the remaining bytes.] |
+| `stxt774` | 0x009C0000 | 0x199000 | 0x3000 | 0x202C | `0xE0000020` RWX code | 6.2162 | [observed: the first 0x202C bytes have entropy 7.9144.] [inferred: protected loader payload, based on the high-entropy contents and RWX mapping alongside the entry stub.] [unknown: runtime responsibilities and activation path.] |
+| `stxt371` | 0x009C3000 | 0x19C000 | 0x4000 | 0x31A8 | `0xE0000020` RWX code | 5.4983 | [observed: hosts the entry stub and bootstrap imports. Static decoding at VA 0x009C308D shows writes that replace the entry instruction with a relative jump. The import directory at file+0x19EF90 lists ten imported functions across six DLLs. The IAT at file+0x19F0A6 occupies 16 slots including six terminators.] |
+
+[observed: `tdb` is absent from the eight section names. Its two literal
+ASCII hits at file+0x248911 and +0x296516 lie in the overlay, which starts
+at file+0x1A0000.] [unknown: whether either overlay hit has a semantic
+meaning.]
+
+### Reproducing the static checks
+
+Use the installation directory from the playbook as `d`. Read the three
+files with `Path.read_bytes()` under `python3 -I`. Use `hashlib.sha256`
+for identities and `bytes.find` or `re.finditer` for the literal markers.
+For the executable, unpack `<III` at offsets `0xFE8` and `0xFF4`.
+Read `e_lfanew` as `<I` at file+0x3C, section count as `<H` at
+PE+6 and optional header size as `<H` at PE+20. Start the section walk
+at PE+24 plus optional header size. For each header, unpack
+`<8sIIII12xI` for name, virtual size, RVA, raw size, raw offset and
+characteristics. Use `Counter` on the raw slice and sum
+`-(count / raw_size) * log2(count / raw_size)` for each byte count.
+Use `objdump -p "$d/ROTK.exe"` to inspect the directories and imports,
+and `objdump -d -j stxt371 --start-address=0x9c305e --stop-address=0x9c30aa "$d/ROTK.exe"`
+to inspect the bootstrap locally. For the version resource, follow PE
+directory index 2 through type 16, name 1 and language 1033, or inspect
+the bounded payload with `strings -el -t x "$d/SECDRV.SYS"`. The
+executable, DLL and driver were inspected as files.
