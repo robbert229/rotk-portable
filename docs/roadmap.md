@@ -23,7 +23,7 @@ plays the game end-to-end. No original assets or original binary ever ship with 
 
 | ID | Milestone | Definition of done | Gate type |
 |---|---|---|---|
-| **M0** | Foundations | Corpus manifest, test harness, symbol DB, headless Ghidra pipeline, Rich-header facts all in repo | agents |
+| **M0** | Foundations | Corpus manifest, test harness, symbol DB, headless Ghidra pipeline, Rich-header facts all in repo. **Reached 2026-11-22** (PRs #1–#8); follow-ups 0.9–0.13 open | agents |
 | **M1** | Unpacked image | `ROTK_unpacked.exe` (local only) passes `tools/validate_dump.py`; zero live xrefs from `.text` into SafeDisc sections | **human** (Windows VM) |
 | **M2** | Mapped binary | Every function is assigned to a source unit (`.c` file) or a library; ≥ 60 % of non-library functions carry a real name | agents |
 | **M3** | Formats complete | Every file in `Data/` parses with a stdlib tool; no **unknown** field in a spec that the exe reads | agents |
@@ -53,7 +53,7 @@ listed WPs start. Agents must not decide these.
 
 | ID | Decision | Recommendation | Blocks | Status |
 |---|---|---|---|---|
-| **D-1** | Matching decomp (byte-identical recompile) vs. functional equivalence | **Byte-matching is the per-function target.** Compiler: [`archaic-msvc/msvc700`](https://github.com/archaic-msvc/msvc700) pinned at `97fe4cdeaeb0bb934591d4b05eb52c2e8ab3e34b` (cl **13.00.9466**, identical to the Rich header, **observed**). It is cloned by script into gitignored `out/toolchain/msvc700/` and never committed. A function that can't be matched may land only with an equivalence-harness test and a `/* NONMATCHING: <reason> */` note. | P5 | **accepted** 2026-11-10 |
+| **D-1** | Matching decomp (byte-identical recompile) vs. functional equivalence | **Byte-matching is the per-function target.** Compiler: [`archaic-msvc/msvc700`](https://github.com/archaic-msvc/msvc700) pinned at `97fe4cdeaeb0bb934591d4b05eb52c2e8ab3e34b` (cl **13.00.9466**, identical to the Rich header, **observed**). It is cloned by script into gitignored `out/toolchain/msvc700/` and never committed. A function that can't be matched may land only with an equivalence-harness test and a `/* NONMATCHING: <reason> */` note and symdb status `nonmatching`. | P5 | **accepted** 2026-11-10 |
 | **D-2** | Implementation language | **C (C99 subset)**, mirroring the original (all recovered source paths are `.c`, **observed**). It must compile under MSVC, clang and gcc. | P5 | proposed |
 | **D-3** | Replacement strategy | **Incremental hooking** (re3/reVC model): an injected DLL replaces original functions one at a time, so the game stays playable and every function is testable in the real process. A big-bang rewrite has no test oracle until the very end. | WP-5.0+ | proposed |
 | **D-4** | Tooling-language exceptions | Keep `tools/` stdlib-only. Allow **`re/ghidra/`** scripts (PyGhidra/Java run inside Ghidra) and a two-layer build. A **top-level `Makefile`** (GNU make) is the single front door: toolchain fetch, configure, build, compare, test. **CMake** does the actual build of `src/`, via presets for each toolchain. For the matching preset, CMake's C compiler and linker are thin shims that call `tools/msvc.py`, which runs cl/link 13.00.9466 under Wine. `AGENTS.md` amended. | WP-0.3, 0.4, 5.0 | **accepted** 2026-11-10 |
@@ -92,38 +92,43 @@ into tickets before an agent starts it.
 
 ### Phase 0 — Foundations (no exe needed; start now)
 
-#### WP-0.1 Corpus manifest · S
+#### WP-0.1 Corpus manifest · S · **done** (#1; `.pac` check pending ISOs)
 - **Goal:** a hash list of every original file, so all later work can cite exact inputs.
 - **Deliverables:** `tools/corpus.py` (walk the install dir and optionally the ISOs plus `.pac` members via `unpac.py`) → `re/corpus/manifest.csv` (`origin,path,size,sha256`).
 - **Accept:** deterministic output across two runs; `ROTK.exe` hash equals the README; the 83 `.pac` members match `Data/` hashes; writes nothing into the game prefix.
+- **Delivered:** 120 install rows, deterministic, ROTK.exe hash matches (**observed**, PR #1). The `.pac` mode is tested only on a synthetic archive; the 83-member comparison waits for `$ROTK_ISO_DIR` (follow-up WP-0.10).
 
-#### WP-0.2 Regression test harness · S
+#### WP-0.2 Regression test harness · S · **done** (#2)
 - **Deliverables:** a `test` target in the top-level `Makefile`; `tests/test_tools.py` (unittest) runs `scwdump`, `geo2obj`, `txw2png` and `unpac` against `assets/samples/` and asserts the SHA-256 of their output. Every test skips cleanly when samples are missing. Expected hashes live in `tests/expected.json`.
 - **Accept:** `python3 -m unittest discover tests` passes with samples present and reports skips (no failures) on a clean clone.
 
-#### WP-0.3 Symbol database schema + tools · M · needs D-4
-- **Deliverables:** `re/README.md` (schema), `tools/symdb.py` (`lint`, `merge`, `stats`, `export-ghidra`, `export-hooks`). CSV columns: `address,size,name,unit,module,kind(func|data|vtable|lib),signature,status(auto|named|typed|decomp|verified),evidence`.
+#### WP-0.3 Symbol database schema + tools · M · **done** (#3, #8)
+- **Deliverables:** `re/README.md` (schema), `tools/symdb.py` (`lint`, `merge`, `stats`, `export-ghidra`, `export-hooks`). CSV columns: `address,size,name,unit,module,kind(func|data|vtable|lib),signature,status(auto|named|typed|decomp|verified|nonmatching),evidence`.
+- **Delivered:** `nonmatching` (accepted under D-1) marks a decompiled function that passes its equivalence test but does not byte-match. Units are module-qualified paths without extension (`Kernel/EntityManager`). `export-ghidra` writes `address,size,name,kind,signature`; `export-hooks` writes `address,name,signature,enabled_by_default` for `decomp|verified|nonmatching` rows. Lint also rejects names reused across modules and C/MSVC keywords (#8). Spec: [`re/README.md`](../re/README.md).
 - **Accept:** lint rejects duplicate or overlapping addresses, bad names and missing evidence; merge of two module files is conflict-free; `stats` prints the % named / typed / decomp per module.
 
-#### WP-0.4 Headless Ghidra pipeline · M · needs D-4
+#### WP-0.4 Headless Ghidra pipeline · M · **partial** (#4)
 - **Inputs:** Ghidra 12.1.4 at `~/.local/opt/ghidra/ghidra_12.1.4_PUBLIC` (**observed**); `GHIDRA_HOME` env var.
 - **Deliverables:** `tools/ghidra_build.py` (stdlib, shells out to `support/analyzeHeadless`) builds `out/ghidra/ROTK.gpr` from a given exe, applies `re/ghidra/ImportSymbols.py` and `ImportTypes`, and runs `ExportSymbols.py` to refresh auto-entries.
 - **Accept:** one idempotent command; works now on the packed exe (expect around 58 functions, **observed** earlier) and later on the dump; symbols survive a round trip unchanged.
+- **Delivered:** `make ghidra` / `make ghidra-export`; scripts are Java (`re/ghidra/*.java`), not Python. The packed exe yields **48** functions under this headless analysis (**observed**, PR #4; the earlier 58 came from a different analysis run, cause **unknown**). Export writes unassigned candidates to `out/ghidra/unassigned.csv` instead of editing `re/symbols` in place. Not done: `ImportTypes` (moves to WP-2.4, when `re/types/` exists) and a real round-trip test (follow-up WP-0.11). See [`re/ghidra/README.md`](../re/ghidra/README.md).
 
-#### WP-0.5 Pre-unpack string and source-path inventory · S
+#### WP-0.5 Pre-unpack string and source-path inventory · S · **done** (#5)
 - **Goal:** seed the module map from what is already readable in the packed image.
 - **Deliverables:** `re/strings/source_paths.txt` (every distinct `f:\EAThirdPerson\...` / `C:\Dev\...` path, normalised, with hit counts) and `docs/modules/README.md` (module tree, expected unit count per module).
 - **Accept:** every path appears exactly once, with file offsets; the module tree matches the README module list or explains the differences.
+- **Delivered:** 73 distinct paths, 71 `.c`, 8 `LL*_Win.c` platform files (**observed**). Four top-level directories missing from the old README list (`Audio`, `IGC`, `SPECIF`, `Stream`); `Memory_Card` sits beside `LL`, not under it. See [`docs/modules/README.md`](modules/README.md).
 
-#### WP-0.6 Rich header and toolchain fingerprint · S · **partial**
+#### WP-0.6 Rich header and toolchain fingerprint · S · **partial** (#6; CRT share needs M1)
 - **Already observed (2026-11-10, ad hoc decode):** ROTK.exe = Utc13_C 13.00.9466 ×563 objects, Utc13_CPP 9466 ×10, Masm700 ×43, Linker700/Export700/Cvtres700 9466, plus 13.00.9178 C ×4 / C++ ×12 (prebuilt static lib, **inferred**) and small VC6-era items (prodid 11 b8799, 18 b8444). Helpers `eauninstall.exe` and `rotk_uninst.exe`: same 9466 toolchain. 563 is an **upper bound** on game `.c` units, because static CRT objects count too. Remaining work: the committed tool, checksum validation, and subtracting the CRT object share (count the `libcmt.lib` members that get linked).
 - **Goal:** pin exact compiler/linker build numbers. The `@comp.id` counts give the number of C objects (≈ translation units).
 - **Deliverables:** `tools/richhdr.py` (decode the XOR-masked Rich header and map prodid/build to tool names) and a results section in the README toolchain block, for `ROTK.exe`, `eauninstall.exe` and `rotk_uninst.exe`.
 - **Accept:** checksum validates, or the header is shown to be absent or damaged by SafeDisc (**observed**, with offsets). The number of C objects is reported as the expected unit count, cross-checked against WP-0.5.
+- **Delivered:** `tools/richhdr.py` + `make richhdr`; ROTK.exe's checksum validates (**observed**). 563 is the total for the 9466 C batch; the reference `libcmt.lib` has 543 such members but which ones were linked is **unknown** pre-dump, so the estimate is **71–562 game C units** (**inferred**). 13.00.9178 is labelled the Windows XP SP1 DDK compiler by richprint (**observed**, provenance of those objects **unknown**). Results live in [`docs/research/toolchain.md`](research/toolchain.md). Remaining: narrow the range after M1 (count linked CRT functions in the dump).
 
 #### WP-0.7 Agent playbook · S · **done** (this change)
 
-#### WP-0.8 Compiler setup and flag recovery · M · setup now, flag confirmation after M1
+#### WP-0.8 Compiler setup and flag recovery · M · setup **done** (#7, #8); flag confirmation after M1
 - **Goal:** run cl 13.00.9466 under Wine from Linux, and recover ROTK's compile flags.
 - **Inputs:** `archaic-msvc/msvc700` @ `97fe4cde…` (D-1). `$MSVC700_DIR` overrides the default `out/toolchain/msvc700/`. Pre-M1: the helper exes (same toolchain) and statically linked library code.
 - **Deliverables:**
@@ -134,6 +139,17 @@ into tickets before an agent starts it.
 - **Also deliver:** the initial top-level `Makefile` with targets `toolchain` (→ `msvc.py fetch`), `hello` (compile a smoke-test `.c` via `msvc.py cl`) and `help`. Later WPs add targets to it; nobody bypasses it.
 - **Accept:** `make toolchain` and `make hello` work from a clean clone; `msvc.py fetch` is idempotent and refuses a hash mismatch; nothing under `out/toolchain/` is tracked; a hello-world `.c` compiles to an object whose Rich entry is `prodid 28 build 9466`; flag set confirmed on ≥ 10 matched functions (post-M1).
 - **Also evaluate:** compare tools for MSVC 7 — reccmp (isledecomp, PDB-driven) vs. objdiff — and pick one for WP-5.2.
+- **Delivered:** `make toolchain` / `hello` / `doctor` work from a clean clone; `fetch` is idempotent and refuses a tampered DLL; `hello.obj` is prodid 28 build 9466 (**observed**). cl 13.00 accepts `/showIncludes` (**observed**). Recommendation: try reccmp first; whether it reads VC7 PDBs is **unknown**. See [`docs/research/compiler.md`](research/compiler.md).
+
+#### Phase 0 follow-ups (from the 0.x review)
+
+| WP | Goal | Size |
+|---|---|---|
+| 0.9 | `txw2png` regression test hashes decoded pixels + header fields instead of compressed PNG bytes, so it passes with stock zlib as well as zlib-ng | S |
+| 0.10 | `corpus.py --verify`: join `.pac` rows to install rows (`Game/x` ↔ `Data/Game/x`) and report the 83-member comparison. Needs `$ROTK_ISO_DIR` (**Human** for the ISOs) | S |
+| 0.11 | Finish WP-0.4's round trip: re-apply the same fixture (expect `applied: 1, conflicts: 0`), then export named rows and compare with the source CSV. Needs a JDK (`javac`) on the machine | S |
+| 0.12 | One place for the game-dir default (currently in the `Makefile`, `corpus.py`, `ghidra_build.py` and two tests); tests skip unless `ROTK.exe` matches the README hash; tests run from any working directory. Start after 0.10 and 0.11 (shared files) | S |
+| 0.13 | `symdb.py stats` adds a cumulative "named-or-better" column for the M2 gate | S |
 
 ### Phase 1 — Unpack SafeDisc (critical gate)
 
@@ -252,7 +268,7 @@ files. **post-gate** WPs need the matching reader code from P3.
   - `native`: host gcc/clang build for P7.
   - Per-unit flag overrides are `set_source_files_properties` calls in a committed `src/flags.cmake`.
 - **Makefile front door:** `make toolchain`, `make matching` (configure + build the `msvc700` preset), `make compare` (per-function byte diff vs. the dump, WP-5.2), `make hook`, `make portable`, `make test` (unittest + symdb lint). Each target is a thin wrapper over `cmake --preset` / `cmake --build` or `tools/*.py`.
-- **Verify early (risk):** CMake's MSVC compiler detection and dependency scanning against cl 13.00 under Wine. Ninja's MSVC dep scanning uses `/showIncludes`, which cl 13.00 may not support (**unknown**). If needed, use the Makefiles generator, disable compiler checks in the toolchain file, or have `msvc.py` synthesise dependency output.
+- **Verify early (risk):** CMake's MSVC compiler detection and dependency scanning against cl 13.00 under Wine. Ninja's MSVC dep scanning uses `/showIncludes`; cl 13.00 supports it (**observed**, WP-0.8). Still **unknown**: whether Ninja parses its output once paths come back as Wine `Z:\` paths. If not, use the Makefiles generator or have `msvc.py` rewrite the dependency lines.
 - Per-function annotation: `/* ROTK 0x0045A1C0 */` on the line before each definition.
 - **Accept:** `make matching` builds a trivial unit through CMake → shim → cl 13.00.9466 (Rich entry `prodid 28 build 9466`); an empty hook DLL builds on Linux and Windows and loads into the repaired exe (proxy DLL or loader); the game still runs.
 
@@ -309,14 +325,18 @@ files. **post-gate** WPs need the matching reader code from P3.
 
 | WP | Status | Depends on | Size | Parallel-safe |
 |---|---|---|---|---|
-| 0.1 corpus manifest | ready | — | S | yes |
-| 0.2 test harness | ready | — | S | yes |
-| 0.3 symdb | ready | — | M | yes |
-| 0.4 Ghidra pipeline | ready | — | M | yes |
-| 0.5 source-path inventory | ready | — | S | yes |
-| 0.6 Rich header | partial (facts observed; tool pending) | — | S | yes |
-| 0.7 playbook | done | — | S | — |
-| 0.8 compiler + flags | ready (setup); flags need M1 | — | M | yes |
+| 0.1 corpus manifest | done (cf7653d); `.pac` check → 0.10 | — | S | — |
+| 0.2 test harness | done (61ae96f) | — | S | — |
+| 0.3 symdb | done (83a8695, 1fa1287) | — | M | — |
+| 0.4 Ghidra pipeline | partial (7bf4874); types → 2.4, round trip → 0.11 | — | M | — |
+| 0.5 source-path inventory | done (c387b93) | — | S | — |
+| 0.6 Rich header | partial (21ea04e); CRT share needs M1 | M1 | S | — |
+| 0.7 playbook | done (48b5a1d) | — | S | — |
+| 0.8 compiler + flags | setup done (81bf447, 1fa1287); flags need M1 | M1 | M | — |
+| 0.9 / 0.13 | ready | — | S | yes |
+| 0.10 pac verify | blocked (ISOs) | `$ROTK_ISO_DIR` | S | yes |
+| 0.11 Ghidra round trip | blocked (no JDK) | JDK install | S | yes |
+| 0.12 game-dir default | todo | 0.10, 0.11 | S | — |
 | 1.1 SD fingerprint | ready | — | S | yes |
 | 1.2 dump runbook | ready | 0.6 (soft) | M | yes |
 | 1.3 dump validator | ready | — | S | yes |
@@ -334,7 +354,7 @@ files. **post-gate** WPs need the matching reader code from P3.
 | R-2 | done (answered) | — | S | — |
 
 **Can start right now in parallel (no human, no decision needed):**
-0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8 (setup), 1.1, 1.2, 1.3, 4.1, 4.2, 4.3a, 4.4, R-3, R-4. That is 16 independent agents.
+0.9, 0.13, 1.1, 1.2, 1.3, 4.1, 4.2, 4.3a, 4.4, R-3, R-4. That is 11 independent agents.
 
 ---
 
