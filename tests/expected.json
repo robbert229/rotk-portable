@@ -1,0 +1,18 @@
+{
+  "geo2obj": {
+    "Ring.obj": "6be7d1fe95002113a88ec75d1363c1ceb51a7d39efb86d515482209a9dba8ce9"
+  },
+  "scwdump_json": {
+    "LoadOnce.json": "d4d4a35c4eca07e3636e0359afcc84e640023a8b298c68630bd799c79449923a"
+  },
+  "scwdump_text": {
+    "LoadOnce.txt": "22a6646ca05c3373a6a873848935a15916ed223a9220eb1ea906f002e98d201e"
+  },
+  "txw2png": {
+    "ring.png": "3c398999b7a34a029d5fb7c406139a7cdefff8af05b843bf00d77e3421596cd5",
+    "ringglos.png": "e73d0e1cf48eb99f37d449cefaca51928aee2fbc3c390f4e19cb13fec2387dfc"
+  },
+  "unpac": {
+    "Game/test.bin": "2d7c09188d414c888f37b661e27aecdd54231e027ea2c8ad9c1e313aab34c5d9"
+  }
+}
