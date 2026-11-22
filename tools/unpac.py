@@ -173,7 +173,7 @@ class Archive:
 
     @staticmethod
     def _parse_toc(first_pack):
-        head = first_pack.read_logical(0, 64 * 1024)
+        head = first_pack.read_logical(0, min(64 * 1024, first_pack.logical_size))
         (count,) = struct.unpack_from("<I", head, 0)
         p = 4
         entries = []
@@ -202,6 +202,10 @@ class Archive:
             members.append({**ent, "stream_offset": pos})
             pos += ent["size"]
         return members
+
+    def close(self):
+        for pack in self.packs:
+            pack._f.close()
 
     def read(self, start, length):
         out = bytearray()
