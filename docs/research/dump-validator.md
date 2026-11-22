@@ -9,7 +9,7 @@ The JSON report's top-level `ok` also determines the exit status.
   `eax.dll` at 0x138778, `d3d8.dll` at 0x14B3C0, `DINPUT8.dll` at
   0x14BB30, `DivxMediaLib.dll` at 0x1582F0 and `DSOUND.dll` at
   0x158310. The packed bootstrap import table also names `kernel32.dll`
-  and `user32.dll`; see the [section map](safe-disc.md#section-map).]
+  and `user32.dll`; see the [section map](safe-disc.md#packed-section-map).]
 - [inferred: the seven DLLs are the requested minimum candidate import set,
   matched case-insensitively. The [FMV analysis](../analysis/fmv-pipeline.md)
   suggests DivxMediaLib is late-bound, so the strict check may flag a valid dump.]
