@@ -8,6 +8,7 @@ help:
 	@echo "make ghidra  Analyze EXE and apply the symbol database"
 	@echo "make ghidra-export  Write new auto rows to GHIDRA_EXPORT"
 	@echo "make srcpaths  Regenerate the packed ROTK.exe path inventory and module map"
+	@echo "make richhdr  Report Rich headers for installed game PEs"
 
 test: lint
 	$(PYTHON) -m unittest discover -s tests -v
@@ -31,3 +32,8 @@ ghidra-export:
 srcpaths:
 	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" > re/strings/source_paths.txt
 	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" --modules > docs/modules/README.md
+
+.PHONY: richhdr
+richhdr:
+	find "$(ROTK_GAME_DIR)" -type f \( -iname '*.exe' -o -iname '*.dll' -o -iname '*.sys' \) -print0 | \
+		sort -z | xargs -0 -r $(PYTHON) -I tools/richhdr.py
