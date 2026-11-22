@@ -9,6 +9,9 @@ help:
 	@echo "make ghidra-export  Write new auto rows to GHIDRA_EXPORT"
 	@echo "make srcpaths  Regenerate the packed ROTK.exe path inventory and module map"
 	@echo "make richhdr  Report Rich headers for installed game PEs"
+	@echo "make toolchain  Fetch MSVC 7.0 and initialize dedicated Wine"
+	@echo "make hello  Build and verify the MSVC smoke test"
+	@echo "make doctor  Report MSVC and Wine diagnostics"
 
 test: lint
 	$(PYTHON) -m unittest discover -s tests -v
@@ -37,3 +40,16 @@ srcpaths:
 richhdr:
 	find "$(ROTK_GAME_DIR)" -type f \( -iname '*.exe' -o -iname '*.dll' -o -iname '*.sys' \) -print0 | \
 		sort -z | xargs -0 -r $(PYTHON) -I tools/richhdr.py
+
+.PHONY: toolchain hello doctor
+toolchain:
+	$(PYTHON) -I tools/msvc.py fetch
+
+hello:
+	mkdir -p out/hello
+	$(PYTHON) -I tools/msvc.py cl /nologo /c /showIncludes /Foout/hello/hello.obj tools/hello/hello.c
+	$(PYTHON) -I tools/msvc.py link /nologo /out:out/hello/hello.exe out/hello/hello.obj
+	$(PYTHON) -I tools/hello/check.py out/hello/hello.obj out/hello/hello.exe
+
+doctor:
+	$(PYTHON) -I tools/msvc.py doctor
