@@ -18,6 +18,14 @@ IMPLEMENTED = ("decomp", "verified", "nonmatching")
 COMPONENT = r"[A-Za-z_][A-Za-z0-9_-]*"
 UNIT = rf"{COMPONENT}(?:/{COMPONENT})+"
 EVIDENCE = r"\[(?:observed|inferred|unknown): [^\[\]]+\]"
+# C89/C99 keywords plus the MSVC 7.0 extensions that cl treats as reserved.
+C_KEYWORDS = frozenset("""
+    auto break case char const continue default do double else enum extern float
+    for goto if inline int long register restrict return short signed sizeof static
+    struct switch typedef union unsigned void volatile while _Bool _Complex _Imaginary
+    __asm __based __cdecl __declspec __except __fastcall __finally __inline __int8
+    __int16 __int32 __int64 __leave __stdcall __try
+""".split())
 
 
 def validate(row, path):
@@ -51,6 +59,8 @@ def validate(row, path):
         yield f"unknown status {status!r}"
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
         yield "name must be a C identifier"
+    elif name in C_KEYWORDS:
+        yield f"name {name!r} is a C keyword"
     elif name.startswith("FUN_"):
         if status != "auto" or not re.fullmatch(r"FUN_[0-9A-F]{8}", name):
             yield "FUN_ placeholders require eight uppercase hex digits and status=auto"
@@ -107,12 +117,17 @@ def load(paths):
     entries.sort(key=lambda entry: entry[:3])
     furthest_end = 0
     starts = {}
+    names = {}
     for address, path, line, row in entries:
+        location = f"{path}:{line}"
+        if row["name"] in names:
+            errors.append(f"{location}: duplicate name {row['name']!r} with {names[row['name']]}")
+        else:
+            names[row["name"]] = location
         if address in starts:
             errors.append(f"{path}:{line}: duplicate address with {starts[address]}")
         elif address < furthest_end:
             errors.append(f"{path}:{line}: overlapping range with {furthest_location}")
-        location = f"{path}:{line}"
         starts.setdefault(address, location)
         end = address + max(1, int(row["size"], 16))
         if end > furthest_end:

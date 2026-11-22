@@ -22,6 +22,17 @@ class MsvcTest(unittest.TestCase):
             "/Foout/hello.obj": "/Fo" + msvc.wine_path("out/hello.obj"),
             "src/app.c": msvc.wine_path("src/app.c"),
             "@args.rsp": "@" + msvc.wine_path("args.rsp"),
+            "/Fmout/hello.map": "/Fm" + msvc.wine_path("out/hello.map"),
+            "/Fxout/a.cod": "/Fx" + msvc.wine_path("out/a.cod"),
+            "/Faout/a.asm": "/Fa" + msvc.wine_path("out/a.asm"),
+            "/FRout/a.sbr": "/FR" + msvc.wine_path("out/a.sbr"),
+            "/Frout/a.sbr": "/Fr" + msvc.wine_path("out/a.sbr"),
+            "/Ycout/pch.h": "/Yc" + msvc.wine_path("out/pch.h"),
+            "/Yuout/pch.h": "/Yu" + msvc.wine_path("out/pch.h"),
+            "/Fpout/a.pch": "/Fp" + msvc.wine_path("out/a.pch"),
+            "/FIout/force.h": "/FI" + msvc.wine_path("out/force.h"),
+            "/F4096": "/F4096",
+            "/Yc": "/Yc",
         }.items():
             with self.subTest(original=original):
                 self.assertEqual(msvc.translate(original), expected)

@@ -66,6 +66,8 @@ class SymdbTest(unittest.TestCase):
             ({6: ""}, "requires a signature"),
             ({7: "nonmatching", 1: "0x00"}, "requires a function with a known size"),
             ({7: "verified", 5: "data"}, "requires a function with a known size"),
+            ({2: "int", 7: "named"}, "is a C keyword"),
+            ({2: "__stdcall", 7: "named"}, "is a C keyword"),
             ({8: "[observed: ]"}, "evidence requires"),
             ({8: " [observed: padded]"}, "trimmed single-line text"),
         )
@@ -96,6 +98,17 @@ class SymdbTest(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertIn("lib_* files require kind=lib", self.run_cli("lint", library).stderr)
+
+    def test_duplicate_names_across_modules(self):
+        row = "0x{:X},0x1,Shared_Name,{m}/Unit,{m},func,,named,[inferred: synthetic]\n"
+        with TemporaryDirectory() as directory:
+            first = Path(directory) / "Alpha.csv"
+            second = Path(directory) / "Beta.csv"
+            first.write_text(HEADER + row.format(0x401000, m="Alpha"), encoding="utf-8")
+            second.write_text(HEADER + row.format(0x402000, m="Beta"), encoding="utf-8")
+            result = self.run_cli("lint", first, second)
+            self.assertEqual(result.returncode, 1)
+            self.assertRegex(result.stderr, r"Beta.csv:2: duplicate name 'Shared_Name' with .*Alpha.csv:2")
 
     def test_merge_and_exports(self):
         with TemporaryDirectory() as directory:
