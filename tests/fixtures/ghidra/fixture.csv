@@ -1,0 +1,2 @@
+address,size,name,unit,module,kind,signature,status,evidence
+0x00409E1F,0x7,Fixture_Entry,fixture/Entry,fixture,func,"int __cdecl Fixture_Entry(int first, int second)",typed,[observed: eauninstall.exe PE entry point; synthetic test name and prototype]
