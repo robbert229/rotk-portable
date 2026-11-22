@@ -1,0 +1,3 @@
+address,size,name,unit,module,kind,signature,status,evidence
+oops,0x1,bad-name,Other/Unit,Broken,bad,,named,
+0x401020,wat,FUN_00401020,,Broken,func,,bogus,untagged
