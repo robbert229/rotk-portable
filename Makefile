@@ -33,8 +33,12 @@ ghidra-export:
 
 .PHONY: srcpaths
 srcpaths:
-	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" > re/strings/source_paths.txt
-	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" --modules > docs/modules/README.md
+	@# Write to temp files and rename on success so a failed run keeps the tracked outputs.
+	set -e; trap 'rm -f re/strings/source_paths.txt.tmp docs/modules/README.md.tmp' EXIT; \
+	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" > re/strings/source_paths.txt.tmp; \
+	$(PYTHON) -I tools/srcpaths.py "$(ROTK_GAME_DIR)/ROTK.exe" --modules > docs/modules/README.md.tmp; \
+	mv re/strings/source_paths.txt.tmp re/strings/source_paths.txt; \
+	mv docs/modules/README.md.tmp docs/modules/README.md
 
 .PHONY: richhdr
 richhdr:

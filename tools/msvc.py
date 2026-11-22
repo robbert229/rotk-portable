@@ -47,9 +47,12 @@ def wine_path(path):
 
 
 # Recognize path-bearing switches before treating an argument as a file path.
+# cl 7.0 attaches the path directly to the switch (/Fofoo.obj); the linker uses a colon.
+# Longer names come first so /FR is not read as /F plus "R...". /F alone is the stack
+# size and never takes a path.
 PATH_OPTION = re.compile(
     r"^([/-](?:(?:out|libpath|pdb|implib|def|map|ilk|manifestfile):"
-    r"|(?:Fo|Fd|Fe|Fi|Fa|Fp|Tc|Tp|FI|I)(?=[^:]*?/)|FR?(?=[^:]*?/)))(.+)$",
+    r"|(?:FI|FR|Fr|Fo|Fd|Fe|Fi|Fa|Fp|Fm|Fx|Yc|Yu|Tc|Tp|I)(?=[^:]*?/)))(.+)$",
     re.IGNORECASE,
 )
 
