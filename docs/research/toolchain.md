@@ -79,7 +79,7 @@ record-only result point to a legacy checksum convention.]
 - [observed: ROTK.exe file+0x90–0xff records Linker700 build 9466, the same
   build seen in the two EA uninstallers. The matching release family is VS .NET
   2002 RTM. Utc13_C and Utc13_CPP build 9466 are cl 13.00.9466.]
-- [inferred: game C code dominates the candidate pool in Utc13_C 9466, given
+- [inferred: game C code contributes to the Utc13_C 9466 pool, given
   the matching toolchain and the source paths under the game tree. The same
   comp.id also marks C objects in the static CRT. The C++, MASM, and AliasObj
   batches likewise share comp.ids with the reference archive. The executable's
