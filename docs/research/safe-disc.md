@@ -12,78 +12,28 @@ Date of research: 2026-11-09. All links verified accessible on that date unless 
 
 ---
 
-## TL;DR — recommended path
+## Retail capture
 
-**No publicly available tool automatically unpacks SafeDisc 3.x executables.** The
-proven community workflow is *run then dump*:
-
-1. **Run the legitimately-owned protected `ROTK.exe` on a real/virtual Windows**
-   (XP/7 VM is simplest; disc or a mount of *your own* disc image). To get past
-   secdrv on modern Windows, use [SafeDiscShim](https://github.com/RibShark/SafeDiscShim)
-   (user-mode secdrv emulation, original disc still required) or
-   [SafeDiscLoader2](https://github.com/nckstwrt/SafeDiscLoader2)
-   (`version.dll` hijack, SafeDisc 2.0–4.9, no disc needed, works on modern Windows).
-2. **Dump the process at OEP** with x32dbg + **Scylla** (or scan the running process
-   with [PE-sieve](https://github.com/hasherezade/pe-sieve)), then **rebuild the IAT
-   with Scylla**. This is the standard packed-PE workflow; SafeDisc is not special-cased
-   by any automated unpacker ([UnpacMe](https://support.unpac.me/unpacme-service),
-   unlicense, cat_unpackers, MalUnpack, ReversingLabs: no SafeDisc support found).
-3. **Sanity-check the dump size ≈ 2,874,232 bytes** — that is the size of the 2003
-   DEViANCE "Proper Fixed EXE" (a no-CD exe = historically a dumped+repaired original),
-   and the size the Nemesis widescreen fix officially supports
-   ([PCGamingWiki](https://www.pcgamingwiki.com/wiki/The_Lord_of_the_Rings:_The_Return_of_the_King)).
-   A dump of that size with sane MSVC 7.0 imports is very likely the true unpacked image.
-4. **Wine alone is not a path**: there is no kernel for `secdrv.sys` in Wine and the
-   driver does not load there ([WineHQ forum](https://forum.winehq.org/viewtopic.php?t=30311)).
-   Use a Windows VM for the dump; the resulting unpacked PE can then be fed to Ghidra
-   on Linux.
-
-**Version correction (important):** the project premise "SafeDisc 2.x" is likely wrong.
-Two independent sources classify ROTK (2003) as **SafeDisc 3**: GameCopyWorld lists
-"Protection: SafeDisc v3" ([GCW page](https://gamecopyworld.com/games/pc_lord_of_the_rings_rotk.shtml))
-and PCGamingWiki lists "SafeDisc 3 DRM"
-([game page](https://www.pcgamingwiki.com/wiki/The_Lord_of_the_Rings:_The_Return_of_the_King)).
-This matches our binary observations: SafeDisc 3 integrates the loader stub *into* the
-exe and encrypts it (no `.ICD` sidecar), unlike v1/v2
-([Wikipedia: SafeDisc](https://en.wikipedia.org/wiki/SafeDisc)). Consequence: the
-legacy static "unwrap" tools (SafeDiscCleaner/Safedisc2Cleaner ≤ v2.6/2.7, UnSafeDisc's
-ICD decryptor) almost certainly **do not apply** to ROTK. Verify directly: search the
-on-disk `ROTK.exe` for the SafeDisc version string (Wikipedia documents an `SD2` marker
-followed by version/subversion/revision dwords) and record the exact version.
-
----
+Use the [dump runbook](unpack-runbook.md) for the current procedure. The
+[WP-1.1 fingerprint](#wp-11--static-fingerprint-of-the-retail-executable)
+records the retail hash, packed sections and version fields.
+[inferred: the fields identify SafeDisc 3.10.020, outside the scope of
+the older SafeDisc 2.x stripping tools.]
 
 ## 1. ROTK-specific pre-existing work
 
-### GameCopyWorld — DEViANCE "Proper Fixed EXE" (no-CD)
-- **What:** `LotR: The Return Of The King v1.0 [EN] Proper Fixed EXE`, released
-  07-11-2003 by DEViANCE (648 KB archive), plus PlayFix no-CD and several trainers.
-  Instructions: replace original `ROTK.EXE` after full install.
-- **Protection handled:** listed as **SafeDisc v3** for this game (OBSERVED on the page).
-- **Usable unpacked binary?** A "fixed EXE" is by scene convention a memory dump of the
-  protected exe at OEP with the protection stubs removed and IAT repaired (INFERENCE —
-  not stated on the page). It is patched to skip CD checks, so it is a *modified* exe,
-  not a pristine unpacked image — but it is the closest thing to a pre-existing unpacked
-  ROTK.exe and an excellent size/bytes cross-reference for our own dump.
-- **Status:** historical (2003); page live as of 2026-11-09.
-- **URL:** <https://gamecopyworld.com/games/pc_lord_of_the_rings_rotk.shtml>
-- **Legal note:** downloading it = obtaining a crack. We did **not** download it. With a
-  legitimately owned copy, dumping your own exe achieves the equivalent without it.
-
-### My Abandonware — ROTK download page
-- **What:** distributable abandonware listing; community comments confirm the retail
-  `ROTK.exe` is SafeDisc-protected, does not run on Win10, and must be replaced by the
-  NoCD exe; also documents XP compatibility mode for `Setup.exe`, widescreen fix usage.
-- **Relevance:** confirms protection type and that the community's only known working
-  modern path is the no-CD exe (i.e., an unpacked exe already existed in 2003).
-- **URL:** <https://www.myabandonware.com/game/the-lord-of-the-rings-the-return-of-the-king-cbz>
+[observed: the original research recorded a historical 2003 modified
+executable listing classifying the game as SafeDisc 3. The retail
+classification now has direct evidence in the WP-1.1 fingerprint.]
+[unknown: correspondence between the modified executable and this
+retail pressing.]
 
 ### PCGamingWiki game page
 - **What:** DRM table ("SafeDisc 3 DRM", disc check + CD key), warning that SafeDisc
   doesn't work on Vista+ with KB3086255 / Win10/11; links to the SafeDisc hub page,
   Wine AppDB entry (appdb id 3257), archive.org demo, and community fixes.
 - **Key RE-relevant fact:** Nemesis 2000 widescreen fix supports "exe size:
-  **2 874 232 bytes**" — the no-CD exe size (OBSERVED). Useful dump oracle.
+  **2 874 232 bytes**" — the no-CD exe size (OBSERVED). Advisory size reference for a rebuilt image.
 - **Essential improvements:** "Fix Enhancers Fix" by Chip-Biscuit
   ([GitHub](https://github.com/Chip-Biscuit/Lord-of-the-Rings-the-Return-of-the-King-PC-Fix),
   [PCGW file 4006](https://community.pcgamingwiki.com/files/file/4006-the-lord-of-the-rings-the-return-of-the-king-pc-fix/))
@@ -254,43 +204,18 @@ rebuild this is a standard afternoon's work *once the exe is running*.
 
 ---
 
-## Recommended workflow (combining the pieces, Linux/Wine host)
+## Recommended workflow (superseded)
 
-1. **Verify the version first (free win):** hex-search the on-disk `ROTK.exe` for the
-   `SD2` marker + 3 dwords (per Wikipedia) to pin the exact SafeDisc version; also note
-   `DrvMgt.dll` presence. Record in the repo.
-2. **Environment:** VirtualBox/QEMU Windows XP SP3 or Windows 7 VM (snapshot it). Pass
-   through the physical CD drive or mount a `*.iso/*.mdf` made from **our own** disc.
-3. **Get it running:**
-   - Preferred (authentic): XP/7 VM + original disc + SafeDiscLoader2 `version.dll`
-     (SD 2.0–4.9) — no driver surgery, works modern-day too if we later retry on Win10.
-   - Alternative: SafeDiscShim v0.9.0 on Win10/11 with the real disc, if Loader2 chokes.
-4. **Reach OEP:** x32dbg on `ROTK.exe`; let the `stxt371` stub decrypt; break on return
-   to the image (e.g., hardware breakpoint on the stub's final `jmp reg`, or
-   `VirtualProtect`/section-execution breakpoint, per the dosbox-x auth trace for what
-   the stub does first). Confirm we're in MSVC 7.0 CRT startup (`___tmainCRTStartup`).
-5. **Dump + rebuild:** Scylla (x64dbg plugin) → attach → IAT autosearch (enable advanced
-   search) → dump → fix dump; cross-check with PE-sieve scanning the live PID.
-6. **Validate:** size ≈ 2,874,232 bytes; imports resolve to kernel32/gdi32/dinput8/dsound
-   et al.; no `stxt*` section references at OEP; loads in Ghidra with hundreds→thousands
-   of functions; ideally the Nemesis/Chip-Biscuit fixes (which expect the unprotected exe)
-   behave correctly against it.
-7. **Archive:** keep SHA-256 of the original protected exe and the dump side by side in
-   the repo notes; dump is derived from our owned copy only.
-
-Fallback if OEP dumping is fought by anti-dump tricks: run fully to main menu, then dump
-with PE-sieve (dumps modified regions without needing exact OEP) and reconstruct.
+The [dump runbook](unpack-runbook.md) supersedes this section. It uses the
+WP-1.1 fingerprint and starts with native original-disc authentication.
+[observed: the upstream descriptions in §3 distinguish Shim's original-disc
+authentication from Loader2's disc-check bypass.]
 
 ## Unknowns / gaps
 
-- **Exact SafeDisc version of v1.0 retail** — reported v3 by GCW and PCGW, but unverified
-  against our binary; do the `SD2` string check. (If it were genuinely 2.x, SafeDiscCleaner
-  could statically unwrap it — cheap experiment worth doing only if version < 2.7.)
 - **Wine AppDB rating for ROTK** — page exists (id 3257) but is bot-gated (Anubis);
   someone with a browser should read it; also check Lutris (link on PCGW) for runner
   reports.
-- **Whether DEViANCE's fixed exe corresponds to retail v1.0 exactly** (GCW lists it as
-  v1.0; can't verify without obtaining it, which we deliberately did not do).
 - **SafeDisc Discord** (the community behind SafeDiscLoader2/SecuROMLoader) — likely the
   best place to ask about dumping SD3 exes; not directly accessible from research tools.
 - **UnSafeDisc availability** — described on Wikipedia but no primary distribution found;
