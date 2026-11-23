@@ -21,10 +21,10 @@ Established from PE headers, CodeView debug directory, embedded source paths, an
 - **Compiler: Microsoft Visual C++ .NET 2002 (MSVC 7.0 / cl 13.00)**
   - PE optional-header linker stamp **7.00** (`link.exe` 7.00 of VS .NET 2002); EA-built helpers (`eauninstall.exe`, `rotk_uninst.exe`) share the same 7.00 stamp, while bundled middleware is linker 6.00 (VS 6) — consistent, not SafeDisc noise.
   - Statically linked MSVC CRT (`Microsoft Visual C++ Runtime Library` asserts; `CorExitProcess` + `mscoree.dll` = VC7 CRT startup's managed-app probe, **not** evidence of .NET — CLR data directory is zero).
-  - **Rich header (observed):** C compiler `Utc13_C` build **13.00.9466** (VS .NET 2002 RTM) × 563 objects, C++ × 10, MASM 7.00 × 43, linker 7.00.9466. Matching toolchain: VS .NET 2002 RTM, *not* SP1 (13.00.9955). The project recompiles with [`archaic-msvc/msvc700`](https://github.com/archaic-msvc/msvc700) (13.00.9466, fetched locally, never committed) and targets byte-matching functions. Details: [`docs/roadmap.md`](docs/roadmap.md) WP-0.6 / R-2.
+  - **Rich header (observed):** C compiler `Utc13_C` build **13.00.9466** (VS .NET 2002 RTM) × 563 objects, C++ × 10, MASM 7.00 × 43, linker 7.00.9466. The 563 is the whole 9466 C batch, static CRT objects included; the working estimate is 71–562 game C units ([`docs/research/toolchain.md`](docs/research/toolchain.md)). Matching toolchain: VS .NET 2002 RTM, *not* SP1 (13.00.9955). The project recompiles with [`archaic-msvc/msvc700`](https://github.com/archaic-msvc/msvc700) (13.00.9466, fetched locally, never committed) and targets byte-matching functions. Details: [`docs/research/compiler.md`](docs/research/compiler.md), [`docs/roadmap.md`](docs/roadmap.md) WP-0.6 / WP-0.8 / R-2.
   - PDB: `f:\EAThirdPerson\lotr\rotk\code\Project\VisualStudio\Win\EN\ROTK_EN_Fin_Win_DotNet.pdb` (RSDS, GUID `eced3210-3532-49d3-a2bb-a850a135a08a`, age 0x2f). "DotNet" here denotes the Visual Studio .NET build configuration; the image is fully native.
 - **Engine: in-house "EAThirdPerson" engine (console-first, PC-ported)**
-  - Recovered source tree `EAThirdPerson\lotr\rotk\code\` with modules: `Kernel` (EntityManager, VisualEntity, MessageManager, TriggerManager…), `Hi-Rendering` / `Lo-Rendering` (shader objects incl. `WeightedSkinCalc_SSE`), `Animation/ChrCntl_AnimLib` (SKA skeletal format), `Actors`, `Physics`, `Collision`, `SFX` (particle effects), `DTB` (data tables: Weapon, Abilities, Upgrade…), `UI` (Hud), `Camera`, `Lib` (UObject, UHeap, UMemPool, UBTree), `RCMP` (audio codec, `rcmp_mad_codec.c`), and a `LL` platform-abstraction layer with `_Win.c` backend variants (console `Memory_Card` layer ported to Win).
+  - Recovered source tree `EAThirdPerson\lotr\rotk\code\` with modules: `Kernel` (EntityManager, VisualEntity, MessageManager, TriggerManager…), `Hi-Rendering` / `Lo-Rendering` (shader objects incl. `WeightedSkinCalc_SSE`), `Animation/ChrCntl_AnimLib` (SKA skeletal format), `Actors`, `Physics`, `Collision`, `SFX` (particle effects), `DTB` (data tables: Weapon, Abilities, Upgrade…), `UI` (Hud), `Camera`, `Lib` (UObject, UHeap, UMemPool, UBTree), `RCMP` (audio codec, `rcmp_mad_codec.c`), `Audio`, `IGC`, `SPECIF` (UFont), `Stream`, a `LL` platform-abstraction layer with `_Win.c` backend variants, and a sibling `Memory_Card` layer (console memory cards, ported to Win). Full map with expected units per module: [`docs/modules/README.md`](docs/modules/README.md).
   - Sources are **C** (`.c` files throughout); dev roots `f:\EAThirdPerson\…` (build box) and `C:\Dev\lotr\rotk\`.
 - **Graphics / input / audio:** Direct3D 8 (`Direct3DCreate8`, `IDirect3D*8` refcount errors), DirectInput 8, DirectSound 8 + DirectMusic; **Creative EAX Unified 8** via `eax.dll` (`EAXDirectSoundCreate8`, EAXUnified8 COM classes).
 - **Video:** DivX FMVs through `DivxMediaLib.dll` + `DivxDecoder.dll` (`LLVideoDivX_Win.c`), not Bink.
@@ -62,13 +62,24 @@ Analyzed in [`docs/analysis/companion-dlls.md`](docs/analysis/companion-dlls.md)
 
 Full plan, work packages and status board: [`docs/roadmap.md`](docs/roadmap.md). Rules for agents working on it: [`docs/agent-playbook.md`](docs/agent-playbook.md).
 
+Run everything through `make` (`make help` lists targets):
+
+| Target | Does |
+|---|---|
+| `make test` | Unit and sample regression tests (runs `lint` first) |
+| `make lint` | Validate `re/symbols/*.csv`; schema in [`re/README.md`](re/README.md) |
+| `make ghidra` / `ghidra-export` | Headless Ghidra project from `re/` ([`re/ghidra/README.md`](re/ghidra/README.md)) |
+| `make srcpaths` / `richhdr` | Regenerate the source-path inventory / decode Rich headers |
+| `make toolchain` / `hello` / `doctor` | Fetch the pinned MSVC 7.0 locally, compile a smoke test, check the setup |
+
 
 - [x] Target identity & toolchain identification (this document)
 - [x] Companion DLL analysis — C8/D1–D4 (dossiers, headers, FMV pipeline, FileParser verdict)
 - [x] Data format parsers — C7/D5 `.scw`, D7 `.GEO`/`.txw`, D8 misc (`tools/`, specs in `docs/formats/`)
 - [x] `.pac` archive extraction — C7/D6 done from retail ISOs: spec in `docs/formats/pac.md`, extractor `tools/unpac.py` (all 83 members SHA-256-verified vs installed tree)
 - [ ] Defeat SafeDisc wrapper for analysis: recover original entry point, real import table (IAT is trimmed to ~16 thunks; imports live in `stxt371`), unpack dump or runtime capture — plan in [`docs/research/safe-disc.md`](docs/research/safe-disc.md)
-- [ ] Full Ghidra function recovery (only 58 procedures discovered so far due to packing)
+- [x] Phase 0 foundations (M0): corpus manifest, test harness, symbol DB, headless Ghidra pipeline, source-path inventory, Rich-header tool, MSVC 7.0 toolchain
+- [ ] Full Ghidra function recovery (headless analysis finds only 48 functions in the packed exe)
 - [ ] Zone-payload / LRTC / audio-bank deep formats (follow-ons in `docs/formats/index.md`)
 - [ ] Engine reimplementation plan (EAThirdPerson module map above is the scaffold)
 
