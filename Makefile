@@ -90,3 +90,7 @@ libscan:
 
 refs:
 	$(PYTHON) -I tools/refs.py fetch
+
+.PHONY: samples
+samples:
+	$(PYTHON) -I tools/samples.py fetch --game-dir "$(ROTK_GAME_DIR)"
