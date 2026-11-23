@@ -79,3 +79,7 @@ assetindex:
 .PHONY: filerefs
 filerefs:
 	$(PYTHON) -I tools/filerefs.py --game-dir "$(ROTK_GAME_DIR)"
+
+.PHONY: corpus-verify
+corpus-verify:
+	@$(PYTHON) -I tools/corpus.py --verify
