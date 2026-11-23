@@ -56,10 +56,14 @@ The parallel record lists in `assets_scw.csv` preserve TOC order, with offsets
 and sizes in hex. Empty list positions preserve alignment with the TOC.
 Embedded names come from the RVWS/ELIF directory at each nonempty record
 offset. They can differ from the longer TOC names. The COTS chunk count covers
-the inner COTS TOC and LLIF. The LRTC count covers the prefix walked by
-`scwdump`. All 26 standalone LRTC files expose a single 64-byte COHS chunk
-from file+0x18 and the walk stops at file+0x60 [observed: LRTC header and chunk
-walk, `assets_scw.csv`].
+the inner COTS TOC and LLIF. For standalone LRTC, `chunk_count` counts
+every stream chunk after the header and `walk_end` equals EOF in all 26
+files. Counts range from 9 to 758 and sum to 4,609 [observed: LRTC walks,
+`assets_scw.csv`]. The `cohs_index` column lists the two tagged words in
+each RDHS-prefixed COHS. [unknown: purpose of those words]
+[observed: `scw_chunks.csv`] The separate
+[chunk inventory](../../re/corpus/scw_chunks.csv) covers all 44 files,
+including the stream chunks in all 211 nonempty COTS TOC regions.
 
 | Mission | Zones | Missing slots | Named banks | Other cinematic records |
 |---|---:|---:|---:|---:|
@@ -163,13 +167,10 @@ The only 512×448 files are `Movies/attrfmv1.avi` and
   EOF [observed: COTS TOC and RVWS signatures, `bytes_after_chain` in
   `assets_scw.csv`]. The offsets are useful landmarks for examining
   the rest of each file.
-- [Unknown: LRTC data after the chunk walk.] The indexed prefix is
-  consistent across all 26 files, with COHS pairs RDHS=1, SNPR=1 and
-  COHS=0x44. The remaining file sizes vary [observed: `cohs_index`,
-  `walk_end` and `size` in `assets_scw.csv`]. In the COTS RVWS directories
-  the scan detects a nested LRTC at file+0x10024 for each `initial_load`
-  [observed: `nested_lrtc_offsets`]. Presence and layout of later
-  nested streams remain [unknown].
+- [Unknown: LRTC resource payload formats.] COHS and ONOS payloads start
+  with `RDHS`, `TADS`, or `tadR` [observed: `scw_chunks.csv`].
+  The TOC region walks use the same framing, with a nested LRTC header
+  at file+0x10024 for each `initial_load` [observed: all 18 COTS missions].
 - [Unknown: TXHE byte at entry+0x41.] It is 7 for `ringglos` (format ID 2)
   and 0 for `ring` (format ID 1), both 256×64 [observed:
   `Data/Game/fro/Ring.txw`, TXHE entries 0 and 1, `txhe_41_unknown` in

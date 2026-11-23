@@ -1,6 +1,8 @@
 """Run the tool CLIs and compare their output with reviewed SHA-256 baselines."""
 
+import csv
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -84,6 +86,74 @@ class ToolRegressionTest(unittest.TestCase):
 
     def test_unpac_split_pac(self):
         self.assert_output_matches("unpac")
+
+
+
+class ScwWalkTest(unittest.TestCase):
+    def dump(self, data):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "test.scw"
+            path.write_bytes(data)
+            result = subprocess.run(
+                [sys.executable, "-I", str(REPO / "tools/scwdump.py"), str(path), "--json"],
+                check=True, capture_output=True, timeout=30,
+            )
+        return json.loads(result.stdout)
+
+    def test_lrtc_sizes_and_padding(self):
+        header = struct.pack("<4sI8x4sI", b"LRTC", 24, b"CNYS", 0)
+        descriptor = struct.pack("<4sI8x4sI4sI", b"COHS", 32, b"RDHS", 1, b"TEST", 7)
+        data_chunk = struct.pack("<4sI8x4s", b"ONOS", 20, b"TADS")
+        # The short LLIF ends at a page boundary and has no size word.
+        data = (header + descriptor + data_chunk * 3272
+                + struct.pack("<4sI8x4s16x", b"ONOS", 36, b"TADS") + b"LLIF"
+                + data_chunk + struct.pack("<4sI", b"LLIF", 0x10000 - 20)
+                + bytes(0x10000 - 28))
+        scene = self.dump(data)
+        self.assertNotIn("stopped_at", scene)
+        self.assertEqual(scene["covered"], "0x20000 / 0x20000")
+        chunks = scene["chunks"]
+        self.assertEqual(len(chunks), 3277)
+        self.assertEqual(chunks[0]["index"], [
+            {"tag": "RDHS", "v1": "0x1", "off": "0x28"},
+            {"tag": "TEST", "v1": "0x7", "off": "0x30"},
+        ])
+        self.assertEqual(chunks[-3]["size"], 4)
+        self.assertEqual(chunks[-2]["offset"], "0x10000")
+
+    def test_lrtc_reports_first_unparsed_offset(self):
+        header = struct.pack("<4sI16x", b"LRTC", 24)
+        good = struct.pack("<4sI8x4s", b"COHS", 20, b"TADS")
+        for tail in (b"COHS", struct.pack("<4sI", b"COHS", 0),
+                     struct.pack("<4sI", b"COHS", 20), bytes(4)):
+            with self.subTest(tail=tail):
+                scene = self.dump(header + good + tail)
+                self.assertEqual(len(scene["chunks"]), 1)
+                self.assertEqual(scene["stopped_at"]["offset"], "0x2c")
+
+    def test_retail_chunk_inventory(self):
+        game = Path(os.environ.get("ROTK_GAME_DIR") or Path.home() / (
+            "Games/lord-of-the-rings-the-return-of-the-king/drive_c/"
+            "Program Files (x86)/EA GAMES/LOTR The Return of the King tm"
+        ))
+        if not game.is_dir():
+            self.skipTest("retail game directory unavailable")
+        result = subprocess.run(
+            [sys.executable, "-I", str(REPO / "tools/scwdump.py"), str(game), "--chunks-csv"],
+            check=True, capture_output=True, timeout=30,
+        )
+        self.assertEqual(result.stdout, (REPO / "re/corpus/scw_chunks.csv").read_bytes())
+        with (REPO / "re/corpus/assets_scw.csv").open(newline="") as source:
+            lrtc = {row["path"]: int(row["size"]) for row in csv.DictReader(source)
+                    if row["container"] == "LRTC"}
+        self.assertEqual(len(lrtc), 26)
+        cursors = dict.fromkeys(lrtc, 0)
+        for row in csv.DictReader(io.StringIO(result.stdout.decode("utf-8"))):
+            path = row["path"]
+            if path in lrtc:
+                self.assertEqual(int(row["offset"], 16), cursors[path], path)
+                cursors[path] += int(row["size"])
+        self.assertEqual(cursors, lrtc)
 
 
 def update_expected():
