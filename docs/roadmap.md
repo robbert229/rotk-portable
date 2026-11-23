@@ -97,6 +97,7 @@ into tickets before an agent starts it.
 - **Deliverables:** `tools/corpus.py` (walk the install dir and optionally the ISOs plus `.pac` members via `unpac.py`) → `re/corpus/manifest.csv` (`origin,path,size,sha256`).
 - **Accept:** deterministic output across two runs; `ROTK.exe` hash equals the README; the 83 `.pac` members match `Data/` hashes; writes nothing into the game prefix.
 - **Delivered:** 120 install rows, deterministic, ROTK.exe hash matches (**observed**, PR #1). The `.pac` mode is tested only on a synthetic archive; the 83-member comparison waits for `$ROTK_ISO_DIR` (follow-up WP-0.10).
+- **Extended (corpus PR):** the corpus now also covers format classification, a PE catalogue, structural asset metadata, file-name references, third-party library fingerprints and pinned reference sources, retail media facts, an editions catalogue, a pinned sample set and a full SCW chunk walk. `make corpus` regenerates it; `make corpus-check` verifies it. Index: [`re/corpus/README.md`](../re/corpus/README.md); overview: [`docs/corpus/README.md`](corpus/README.md).
 
 #### WP-0.2 Regression test harness · S · **done** (#2)
 - **Deliverables:** a `test` target in the top-level `Makefile`; `tests/test_tools.py` (unittest) runs `scwdump`, `geo2obj`, `txw2png` and `unpac` against `assets/samples/` and asserts the SHA-256 of their output. Every test skips cleanly when samples are missing. Expected hashes live in `tests/expected.json`.
@@ -146,7 +147,7 @@ into tickets before an agent starts it.
 | WP | Goal | Size |
 |---|---|---|
 | 0.9 | `txw2png` regression test hashes decoded pixels + header fields instead of compressed PNG bytes, so it passes with stock zlib as well as zlib-ng | S |
-| 0.10 | `corpus.py --verify`: join `.pac` rows to install rows (`Game/x` ↔ `Data/Game/x`) and report the 83-member comparison. Needs `$ROTK_ISO_DIR` (**Human** for the ISOs) | S |
+| 0.10 | `corpus.py --verify`: join `.pac` rows to install rows (`Game/x` ↔ `Data/Game/x`) and report the 83-member comparison. Needs `$ROTK_ISO_DIR` (**Human** for the ISOs). Verifier and disc-tree hashing implemented in the corpus PR (`make corpus-verify`, tested on synthetic packs); only the retail run remains. Compare discs against [`re/corpus/media.csv`](../re/corpus/media.csv) | S |
 | 0.11 | Finish WP-0.4's round trip: re-apply the same fixture (expect `applied: 1, conflicts: 0`), then export named rows and compare with the source CSV. Needs a JDK (`javac`) on the machine | S |
 | 0.12 | One place for the game-dir default (currently in the `Makefile`, `corpus.py`, `ghidra_build.py` and two tests); tests skip unless `ROTK.exe` matches the README hash; tests run from any working directory. Start after 0.10 and 0.11 (shared files) | S |
 | 0.13 | `symdb.py stats` adds a cumulative "named-or-better" column for the M2 gate | S |
@@ -243,12 +244,12 @@ Background and tool survey: [`research/safe-disc.md`](research/safe-disc.md).
 ### Phase 4 — Data formats to completion
 
 WPs tagged **pre-gate** can start now using statistics across all 41 COTS and 24 LRTC
-files. **post-gate** WPs need the matching reader code from P3.
+files. (The installed tree has 18 COTS and 26 LRTC files, **observed** in [`re/corpus/formats.csv`](../re/corpus/formats.csv); the source of the 41/24 counts is **unknown** and should be rechecked.) **post-gate** WPs need the matching reader code from P3.
 
 | WP | Format | Gate | Deliverable / acceptance |
 |---|---|---|---|
-| **4.1** | COTS zone payloads (`tadR`/`gfxt`/`xtrc`/`pmas`/`zfxt` record framing) | **pre-gate** stats → post-gate confirm | `scw.md` §Zones with no **unknown** framing fields; `scwdump.py --zones` walks every record in all 41 files with exact size reconciliation |
-| **4.2** | LRTC chunk stream beyond `0x60` | **pre-gate** | Full chunk walk of GlobScen / LoadOnce / 24 Player files reconciling to EOF |
+| **4.1** | COTS zone payloads (`tadR`/`gfxt`/`xtrc`/`pmas`/`zfxt` record framing). Corpus PR walks 211 TOC regions in the 18 installed COTS files; the tails' framing is still **unknown** | **pre-gate** stats → post-gate confirm | `scw.md` §Zones with no **unknown** framing fields; `scwdump.py --zones` walks every record in all 41 files with exact size reconciliation |
+| **4.2** | LRTC chunk stream beyond `0x60` | **pre-gate** · walk **done** (corpus PR) | Full chunk walk of GlobScen / LoadOnce / 24 Player files reconciling to EOF. All 26 installed LRTC files now walk to EOF (**observed**, [`scw_chunk_summary.csv`](../re/corpus/scw_chunk_summary.csv)); payload layouts inside chunks remain open |
 | **4.3** | Audio banks (`igc_*_bank`, `pmas`/`ONOS`), RCMP codec | **pre-gate** (scan for MPEG audio sync words: libmad ⇒ MPEG audio, **inferred**) → post-gate | `docs/formats/audio.md` + `tools/bank2wav.py`; FMV audio located (closes the D3 open question) |
 | **4.4** | Geometry and textures inside scenes (GEO/TXW generalised: multi-mesh, mips, palettes, other format ids) | pre-gate | `geo2obj`/`txw2png` handle every embedded instance found by 4.1 |
 | **4.5** | DTB tables | post-gate (3.DTB) | `docs/formats/dtb.md` + `tools/dtbdump.py` → CSV |
@@ -312,7 +313,7 @@ files. **post-gate** WPs need the matching reader code from P3.
 
 | WP | Question | Output |
 |---|---|---|
-| **R-1** | Does the owner have other builds of this engine (ROTK Xbox / PS2 / GameCube, related EA third-person titles)? Unprotected builds such as an Xbox XBE (MSVC family, **inferred**) can cross-reference code, and discs sometimes carry map or symbol files. Use legitimately owned copies only. | `docs/research/other-builds.md` · **Human** for inventory |
+| **R-1** | Does the owner have other builds of this engine (ROTK Xbox / PS2 / GameCube, related EA third-person titles)? Unprotected builds such as an Xbox XBE (MSVC family, **inferred**) can cross-reference code, and discs sometimes carry map or symbol files. Use legitimately owned copies only. Public catalogue of editions and engine leads (incl. Xbox EA-062 `default.xbe`): [`docs/corpus/editions.md`](corpus/editions.md), with an owner checklist. | `docs/research/other-builds.md` · **Human** for inventory |
 | **R-2** | **Answered 2026-11-10:** target is cl **13.00.9466** (VS .NET 2002 RTM, **observed** in the Rich header). `github.com/archaic-msvc/msvc700` ships exactly 13.00.9466 (`msvc700_sp1` is 9955: wrong). That org redistributes Microsoft binaries, so the owner chose it (D-1). The repo never vendors it; `tools/msvc.py fetch` clones the pinned commit locally. Enables FID generation (2.2), matching (D-1) and WP-0.8. | `docs/research/compiler.md` (written by WP-0.8) |
 | **R-3** | Prior-art method notes: re3/reVC (hook model), isledecomp + reccmp (MSVC address annotations, matching compare), other D3D8-era decomps | `docs/research/prior-art.md`, adopting conventions where they fit |
 | **R-4** | Published community fixes for ROTK (widescreen / FOV / FPS patchers) record addresses in the no-CD-shaped exe. These are useful **landmarks** after M1. Read their documentation only; download no cracks. | Landmark list appended to `re/symbols` evidence |
@@ -334,7 +335,7 @@ files. **post-gate** WPs need the matching reader code from P3.
 | 0.7 playbook | done (48b5a1d) | — | S | — |
 | 0.8 compiler + flags | setup done (81bf447, 1fa1287); flags need M1 | M1 | M | — |
 | 0.9 / 0.13 | ready | — | S | yes |
-| 0.10 pac verify | blocked (ISOs) | `$ROTK_ISO_DIR` | S | yes |
+| 0.10 pac verify | tool done (corpus PR); retail run blocked (ISOs) | `$ROTK_ISO_DIR` | S | yes |
 | 0.11 Ghidra round trip | blocked (no JDK) | JDK install | S | yes |
 | 0.12 game-dir default | todo | 0.10, 0.11 | S | — |
 | 1.1 SD fingerprint | ready | — | S | yes |

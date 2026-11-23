@@ -70,6 +70,9 @@ Run everything through `make` (`make help` lists targets):
 | `make lint` | Validate `re/symbols/*.csv`; schema in [`re/README.md`](re/README.md) |
 | `make ghidra` / `ghidra-export` | Headless Ghidra project from `re/` ([`re/ghidra/README.md`](re/ghidra/README.md)) |
 | `make srcpaths` / `richhdr` | Regenerate the source-path inventory / decode Rich headers |
+| `make corpus` / `corpus-check` | Regenerate / verify every install-derived corpus table ([`re/corpus/README.md`](re/corpus/README.md)) |
+| `make samples` | Copy the pinned sample set from your install into `assets/samples/` |
+| `make corpus-verify` | Check retail `.pac` members against the install (needs `ROTK_ISO_DIR`) |
 | `make toolchain` / `hello` / `doctor` | Fetch the pinned MSVC 7.0 locally, compile a smoke test, check the setup |
 
 
@@ -78,6 +81,7 @@ Run everything through `make` (`make help` lists targets):
 - [x] Data format parsers — C7/D5 `.scw`, D7 `.GEO`/`.txw`, D8 misc (`tools/`, specs in `docs/formats/`)
 - [x] `.pac` archive extraction — C7/D6 done from retail ISOs: spec in `docs/formats/pac.md`, extractor `tools/unpac.py` (all 83 members SHA-256-verified vs installed tree)
 - [ ] Defeat SafeDisc wrapper for analysis: recover original entry point, real import table (IAT is trimmed to ~16 thunks; imports live in `stxt371`), unpack dump or runtime capture — plan in [`docs/research/safe-disc.md`](docs/research/safe-disc.md)
+- [x] Original-file corpus: formats, PE catalogue, asset metadata, file references, library fingerprints, media and editions catalogues, sample set, full SCW chunk walk ([`docs/corpus/README.md`](docs/corpus/README.md))
 - [x] Phase 0 foundations (M0): corpus manifest, test harness, symbol DB, headless Ghidra pipeline, source-path inventory, Rich-header tool, MSVC 7.0 toolchain
 - [ ] Full Ghidra function recovery (headless analysis finds only 48 functions in the packed exe)
 - [ ] Zone-payload / LRTC / audio-bank deep formats (follow-ons in `docs/formats/index.md`)
@@ -87,7 +91,7 @@ Run everything through `make` (`make help` lists targets):
 
 - **No copyrighted game assets are committed.** Sample files (`Ring.GEO`, `Ring.txw`,
   `LoadOnce.scw`, renders) live under gitignored `assets/samples/` / `out/` and are
-  regenerated from your own retail discs with `tools/unpac.py`
+  regenerated from your own install with `make samples` (pinned set in `re/corpus/samples.csv`) or from your retail discs with `tools/unpac.py`
   (commands in [`docs/formats/index.md`](docs/formats/index.md)).
 - SafeDisc (`secdrv.sys`) is unsupported on modern Windows/Wine without third-party shim; analysis so far is static.
 - The real code is encrypted/packed by SafeDisc; meaningful decompilation requires an unpacked image (e.g., dumped from a running process under a SafeDisc-compatible layer).
