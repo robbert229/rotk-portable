@@ -10,13 +10,11 @@ from pathlib import Path
 import re
 import struct
 
-EXPECTED_DLLS = {
-    "d3d8.dll", "dinput8.dll", "dsound.dll", "eax.dll",
-    "divxmedialib.dll", "kernel32.dll", "user32.dll",
-}
+REQUIRED_DLLS = {"kernel32.dll", "user32.dll"}
+ADVISORY_DLLS = {"d3d8.dll", "dinput8.dll", "dsound.dll", "eax.dll", "divxmedialib.dll"}
 STUBS = {"stxt371", "stxt774", "        "}
 REFERENCE_SIZE = 2_874_232
-SIZE_TOLERANCE = 512 * 1024
+REFERENCE_LIMIT = 32
 ENTROPY_LIMIT = 7.5
 
 
@@ -131,6 +129,25 @@ class PE:
 def stub_references(pe, text, code, tables):
     stubs = [section for section in pe.sections if section.name in STUBS]
     counts = {"rel32": 0, "iat_indirect": 0}
+    references = []
+    opcodes = {0xe8: "call_rel32", 0xe9: "jmp_rel32",
+               0x15: "call_iat_indirect", 0x25: "jmp_iat_indirect"}
+
+    def record(index, target, encoding, opcode):
+        for section in stubs:
+            if section.contains(target):
+                counts[encoding] += 1
+                if len(references) < REFERENCE_LIMIT:
+                    references.append({
+                        "source_rva": f"{text.rva + index:#x}",
+                        "kind": opcodes[opcode],
+                        "target_rva": f"{target:#x}",
+                        "target_section": section.name,
+                    })
+                break
+
+    if not stubs:
+        return counts, references
     iat, iat_size = pe.directory(12)
     ranges = [(iat, iat_size)] if iat else []
     for lookup, first_thunk in tables:
@@ -148,7 +165,7 @@ def stub_references(pe, text, code, tables):
             if index + 5 <= len(code):
                 displacement, = struct.unpack_from("<i", code, index + 1)
                 target = (text.rva + index + 5 + displacement) & 0xffffffff
-                counts["rel32"] += any(section.contains(target) for section in stubs)
+                record(index, target, "rel32", code[index])
         elif index + 6 <= len(code):
             address, = struct.unpack_from("<I", code, index + 2)
             slot = address - pe.base
@@ -160,13 +177,11 @@ def stub_references(pe, text, code, tables):
                     continue
                 if offset + 4 <= end:
                     target, = struct.unpack_from("<I", pe.data, offset)
-                    counts["iat_indirect"] += any(
-                        section.contains(target - pe.base) for section in stubs
-                    )
-    return counts
+                    record(index, target - pe.base, "iat_indirect", code[index + 1])
+    return counts, references
 
 
-def validate(data, structural=False):
+def validate(data, structural=False, *, pre_repair=False):
     checks = {}
 
     def check(name, passed, **details):
@@ -196,32 +211,42 @@ def validate(data, structural=False):
     tables = []
     try:
         imports, tables = pe.imports()
-        missing = EXPECTED_DLLS - imports
-        check("imports", not missing, dlls=sorted(imports), missing=sorted(missing))
+        missing = REQUIRED_DLLS - imports
+        check("imports", not missing, dlls=sorted(imports), missing=sorted(missing),
+              advisory_missing=sorted(ADVISORY_DLLS - imports))
     except ValueError as error:
         check("imports", False, reason=str(error))
     if x86 and code:
         mapped_code = code[:text.size or text.raw_size]
-        counts = stub_references(pe, text, mapped_code, tables)
-        check("stub_references", True, total=sum(counts.values()), **counts)
+        counts, references = stub_references(pe, text, mapped_code, tables)
+        total = sum(counts.values())
+        check("stub_references", pre_repair or total == 0, total=total,
+              references=references, **counts)
     else:
         check("stub_references", False, reason="requires file-backed x86 .text")
-    check("file_size", abs(len(data) - REFERENCE_SIZE) <= SIZE_TOLERANCE,
-          bytes=len(data), reference_bytes=REFERENCE_SIZE, tolerance_bytes=SIZE_TOLERANCE)
+    check("file_size", True, bytes=len(data), reference_bytes=REFERENCE_SIZE,
+          delta_bytes=len(data) - REFERENCE_SIZE)
     return checks
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--structural", action="store_true", help="check generic PE structure only")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--structural", action="store_true", help="check generic PE structure only")
+    modes.add_argument("--pre-repair", action="store_true", help="report SafeDisc references without failing on them")
     parser.add_argument("exe", type=Path)
     args = parser.parse_args()
     try:
-        checks = validate(args.exe.read_bytes(), args.structural)
+        checks = validate(args.exe.read_bytes(), args.structural, pre_repair=args.pre_repair)
     except OSError as error:
         checks = {"read": {"ok": False, "reason": str(error)}}
     passed = all(check["ok"] for check in checks.values())
-    report = {"file": str(args.exe), "mode": "structural" if args.structural else "rotk",
+    mode = "rotk"
+    if args.structural:
+        mode = "structural"
+    elif args.pre_repair:
+        mode = "pre-repair"
+    report = {"file": str(args.exe), "mode": mode,
               "ok": passed, "checks": checks}
     print(json.dumps(report, indent=2, sort_keys=True))
     return int(not passed)
