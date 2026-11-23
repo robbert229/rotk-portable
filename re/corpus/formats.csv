@@ -1,0 +1,121 @@
+path,sha256,size,ext,detected_format,magic_hex,spec,tool,parse_status,parse_note
+00000000.016,0e7aeec52d596772b83f977bd7e85ab1ac392244e5219abb059d9a3a0d0ea412,307324,.016,BMP,424d7cb004000000,docs/formats/misc.md,,n/a,no repository parser
+00000000.256,c2c18e3905a9aba706a11574a0eb8ddbab9e9fcf99c6a1068c8c3c61c82f1784,308278,.256,BMP,424d36b404000000,docs/formats/misc.md,,n/a,no repository parser
+Data/Game/GlobScen.scw,d54d7f47a74e604264a4a492f219916389a725bb04f8635b92dc7d7f5519dbe2,5505024,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Game/bla/bla01.scw,5b9998f0a6b5908091237d1ad71da6ac69e26a81b2c2028058ac5adb7e42badc,82247680,.scw,SCW COTS,434f5453a0010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/cir/cir00.scw,b24bbd81f107166e3a408143713f454766587ca926de973ac6255d68ec697a9e,105316352,.scw,SCW COTS,434f5453fc020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/cir/cir01.scw,2ea9b2483f9697497b3f2275275fddc695457289b6e41cbb65d1204dfd10a018,28311552,.scw,SCW COTS,434f545318010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/cra/cra01.scw,8f51933206a22abc0a4fc05db51b4dabc58979990ec0b4d9582decfcac0209ed,48955392,.scw,SCW COTS,434f545310010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/fro/Ring.GEO,a18c4b6dd736764ed6fa4a8161af1c46c9a3a9d6891474cd10052081e674a148,29332,.GEO,GEO,4d4f454701000000,docs/formats/geo-txw.md,tools/geo2obj.py,ok,mesh parsed
+Data/Game/fro/Ring.txw,450d94db2883e4472d5aa706599a3c3559bf37446b8f9535a28fad82b4f8595c,24800,.txw,TXW,5458572010020000,docs/formats/geo-txw.md,tools/txw2png.py,ok,texture table listed
+Data/Game/fro/fro03.scw,4e15c066bd8eceed9968d785bc8b58fe16bd19918ff0feb33c613d34a5428058,104071168,.scw,SCW COTS,434f545334010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/hel/hel01.scw,82986b1d681d7c447afe40fa71051e6db85182aa16f3a20275e18fc936b729e0,61538304,.scw,SCW COTS,434f545384010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/ise/ise01.scw,bc363040b302119c42190c4535d0db43df120e8968938237c3987d9222e123e1,108265472,.scw,SCW COTS,434f545340020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/min/min00.scw,f428d599179f52df7afcce5d9293c6f042ee38173a62d4cd5b112b035702b446,113049600,.scw,SCW COTS,434f545340020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/min/min02.scw,81f66b3327f7516a107190101a2bfaf3ab1249748fe961e86bbae97e8ae17d52,57737216,.scw,SCW COTS,434f545310010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/min/min04.scw,22b5f647f8f1ed94057f0e881e6059b85fb93bc92e12363f7fa666fb899bdf73,45285376,.scw,SCW COTS,434f545310010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/osg/osg01.scw,a4e26ea3c7743e5f6eae28b358356d350c492449aff19efcde6f3979e7842b40,114688000,.scw,SCW COTS,434f5453cc020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pal/pal01.scw,5dc7887fa2e84e61d00e181c45222282bc46fea05a33d4d7a637b2a38d026360,31326208,.scw,SCW COTS,434f545330010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pal/pal02.scw,ec94a7399aca9d162bf99b28b56975cb54b6e75ccf43cf5abda7488de94ef7d1,26345472,.scw,SCW COTS,434f545330010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pat/pat01.scw,a25336e46647addfa23f35c6342292405a066aeb43f12f8ee88686d2e4a004f0,110362624,.scw,SCW COTS,434f545338030000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pat/pat02.scw,4b2b50dfacca971b137342e18df4169c0fe3f6c1a7a467040a2b8d5978c914e7,29622272,.scw,SCW COTS,434f5453ec000000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pat/pat03.scw,d83ff91f05868c8f86d04508be2806995e3a3ac3ae9da39bfb10c6d2ba9d2896,47972352,.scw,SCW COTS,434f545300020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/pel/pel02.scw,19bbebda7ce00645202b08d6ae061659851ed44b49f1a5a8872857770e225bcd,64749568,.scw,SCW COTS,434f5453a0010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/Game/she/she01.scw,8f1706777ecd834c8ebcb23f02295820c98037adfc65385e11cc7d42d2e4a653,116981760,.scw,SCW COTS,434f545360020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
+Data/LoadOnce.scw,dceda728cb300531f236807d885e104db9299c604be6a8c343956568fc7b39b2,65536,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Movies/attrfmv1.avi,5e814bd1518118d0854e82fc815389b50f6acdda3a6a6fb421e90fa5dfb93127,46788608,.avi,RIFF/AVI,5249464648eec902,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/crakfmv1.avi,2bd441c0822618534c9d5468b4d0cdec43aaaeed27fcc861531fa91fa4fdd757,6948864,.avi,RIFF/AVI,52494646c8006a00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/endfmv1.avi,5c0a339d78072a904416cd2ed1b21840bea71cfb455b0094d04b1c60dea04118,15968256,.avi,RIFF/AVI,524946465ea4f300,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/gatefmv1.avi,a46db841092116e370edf460943df8786f2324ef5fbf0593643e4b3e25cd118a,15032320,.avi,RIFF/AVI,52494646805ee500,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/gatefmv2.avi,b4527fed76007735a9532fd493cf8a32cd963ba4b31874963a91742d35191543,8404992,.avi,RIFF/AVI,52494646963c8000,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/helmfmv1.avi,1c49845360c647f5068755fb63b725bdfbe302e48825d3cd4bc08ac8f70268bd,64032768,.avi,RIFF/AVI,524946466a0fd103,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/helmfmv2.avi,0fec9c1316f5e6e7206c6cf33fd6fb3073c56de74125bf83771e17f4b3c9561a,13438976,.avi,RIFF/AVI,52494646420ecd00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/helmfmv3.avi,db75643de1e8ceb549878a9bb961a4f90b6e794a02eb91a88ba5854952602661,38600704,.avi,RIFF/AVI,5249464668ff4c02,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/isenfmv1.avi,70fbe347b590430d071bbf5aa20b1589bcb5fe520c90f023bd64fe695a034393,44568576,.avi,RIFF/AVI,52494646820fa802,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/isenfmv2.avi,2c2905bfa4a513cb62dc22af2ac073c144144a1385e28c4b7b516967ff2fc0a8,35153920,.avi,RIFF/AVI,5249464640601802,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/logos.avi,c53e1ed638f255906d2a180b46a7e7448627c13e834afdd301af4d61b1d3e1c8,1597440,.avi,RIFF/AVI,5249464614591800,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/mtwlfmv1.avi,3b3cd605d9b3f876ea70980ec56a67db5353cead79f8f495a441b0ca5dbd973c,43800576,.avi,RIFF/AVI,52494646f2529c02,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/mtydfmv2.avi,1255c296128dd0eee0469c6ae55bcee791dede6179241227a87edd229fafc4e0,16502784,.avi,RIFF/AVI,5249464638cbfb00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/osgifmv1.avi,62f40ee33d58674776f4c755823264a605e6a9f741cb58b581d20ba67f6c44cb,44638208,.avi,RIFF/AVI,52494646dc19a902,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/osgifmv2.avi,1689477d2b1e497e34c4423673cfe1e74a1b01f84748a5bc453e289d6322dd65,44185600,.avi,RIFF/AVI,524946464032a202,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/pat1fmv1.avi,28972babed6e376ccd2888cd789175cfa13f03b8a96bde89db25e8c61119e324,22052864,.avi,RIFF/AVI,52494646147f5001,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/pat1fmv2.avi,d97b81cb391e920ce305d2f9b8deeded1c83b045a8c417426a0ac434b5d1ba8a,6995968,.avi,RIFF/AVI,524946463ebf6a00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/pat2fmv1.avi,3aaea0dd72c9921c9ff69c9a58fa67d4e01c7de28b035151ad7da4b76dbdc44e,51200,.avi,RIFF/AVI,52494646febf0000,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/pelefmv1.avi,514a83bcdc81b95342b6f75fb734bd7b40927be1dc7f195ef0c19860aeb25763,28907520,.avi,RIFF/AVI,524946461410b901,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/rtsvid.avi,c5abac0a2b44d2af9e76016e4e18405cb62c6a27c840295b6760d13e9609d5b2,35149824,.avi,RIFF/AVI,524946465c561802,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Movies/shelfmv1.avi,7c95cc75f7d4760abf501c8e8e55ed1b4113699af0a399093f2844e8bc2f465e,8015872,.avi,RIFF/AVI,52494646a04c7a00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Player/Char_ArC.scw,95b1d49a6904e929a371009f48b87e99c0e9b324bff27132428ba9fe1ef7722d,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Ara.scw,03d0b9018dea2ab4480f81302ca03ca9dfa0de6c5f25ede124c4e8fed57a46ab,1572864,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Far.scw,196038d76470bcaa8490a8e0682fbb31452d1e167a600e37ff552720d7746e2d,1376256,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_FrD.scw,8a76ff4a54a9e1dbaca356910083964ba24ccc090ebddd790f1157d6938ba46e,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Fro.scw,ecb18902759b7a862147ef95bfb29733cca377a0eee15731186734a33de33b5c,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Gan.scw,d100d653d90d3b79d4abe416a3e9816dceb8936d77fb726ddeb1bad444f3db78,1638400,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Gim.scw,4e3fcb9b7306a69bf04d263216bc583fd950d75bf4555b26128514140aed0450,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Leg.scw,f88a9d935e52ba7bca48b9cc69e1cd93b77899fd955e87e369bafb596e7280ec,917504,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Mer.scw,1c3bc19a3c366da577ac92d24204e48f93494c56b1b66f0422fda2b73ea2f2b8,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Pip.scw,ca82663b967bf04c7b0a3ec5fa88a52079ddb7c8c3f00a462f2b89cd9fc5638e,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_SaC.scw,1695e48acd3be718a0ecccc679936a6737ef4fc45cd06edbbb1b4af0b4fb743e,1310720,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_Sam.scw,2ace812da0fc1732983d233b5962039f1829805805254e9cee75d216f02af10b,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_ArC.scw,593919e064fbf38f60118dc10a023975be98b7cad74da54dd7a09c554db3cfb6,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Ara.scw,32764c285f82c431eb5641fa198f850dd4608df04bbd5fb181064d542292d626,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Far.scw,f123bc3e7831852b13fafd396f31e460beac387402da7e1a6e64d1904adb2065,851968,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_FrD.scw,369300ff410f2274adab48e2a74918640f0dda2c7691b546e868fddcbdf8c25a,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Fro.scw,a59731b500fe11c361a4966532e338a1390dfb00b1986aecabd68f501ee312ca,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Gan.scw,3526c9d507077acbbd8e0c6fa918373f37f49d09c412411d8ce26d3a5134b5a7,720896,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Gim.scw,b52f28c10e3131f4b73facb4adeec977f3541c20ce2173b22d76bc8f30640373,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Leg.scw,d25227dcfeecb205fcc0fa46afd489ff2e15b9f49c46dcf4f276174fa784a11e,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Mer.scw,f07c7437146e8013b5a179d26feaeece18ca2c6cb28ec5667d44a227f4c9964e,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Pip.scw,29eae54b7c96d60b85de8fa590e0d752c7d2c4114c9626ec7b47e4524605ffe9,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_SaC.scw,432e78d6cfded26167b316e3c907902328243b03d1dde5315f028ea6ef3ba4b0,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Foll_Sam.scw,ecb1c6ed9136238570829e4aff51baaef673a861263022122c812439ad8270f4,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Special/faraspc1.avi,38df811447c4d5132ba645a25d0e466034cf881cfc3695f39e20c49e3e5a0c05,5685248,.avi,RIFF/AVI,52494646a4bf5600,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/faraspc2.avi,cf2b4ac9ba928a8c2b342d2875c199c1606f1d06e5842f1f4d60cea33bb722a7,11345920,.avi,RIFF/AVI,524946462619ad00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/frodspc1.avi,da4cf7c4f2f67f6b74ca413fc7ed16c617553c01cc5910edbce90d86dd5f23ee,11501568,.avi,RIFF/AVI,524946469c7caf00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/gandspc1.avi,2700fd249b9fdbf1d3d82e38d98c67ce786500bde145290e1554acf16483a4bf,21383168,.avi,RIFF/AVI,5249464608414601,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/gollspc1.avi,7d421446ac8f5dae736397addbf4a72f413821a60e2794baf607d50b60d503ef,22530048,.avi,RIFF/AVI,52494646e0c65701,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/hobtspc1.avi,068b405365be3d95697f5a9aa52f2ff5e47a7782e06fd75670bac2cf89842bed,17614848,.avi,RIFF/AVI,524946465cc00c01,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/makespc1.avi,d8e0cfd9fe0c3f75a8560241324245aa752b704d3eb067e67f50a054b9eee30f,47521792,.avi,RIFF/AVI,52494646d41ed502,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/meryspc1.avi,630ce9a99be0784557503657d96e363b67b9347298d2048fec4559ab550255a6,13084672,.avi,RIFF/AVI,5249464634a3c700,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/meryspc2.avi,2744a16f7d0dc2b2cc092d279bbb102bf3dd8fbc82293f5df4f82e711f0ab5ce,10670080,.avi,RIFF/AVI,5249464668caa200,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/pipnspc1.avi,72dbddd18bfc9af0ac4217ebe5bbb81a8e44bb1cc550fc23dc82d5fe7c4a6c8b,5234688,.avi,RIFF/AVI,524946469ade4f00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/pipnspc2.avi,c0f0e37e022dc6602e071cd024c788c00484a49043b5c422b9c9c7ddc37bcec8,9953280,.avi,RIFF/AVI,5249464606da9700,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/samgspc1.avi,9248a80a3c7d7d9519dcd3151566bc1a0cf2d82c03bdd8174cda844937ec972a,14489600,.avi,RIFF/AVI,52494646ec13dd00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/saruspc1.avi,4aaf4df1f654cee0119418da928bbd9903284741036fe696a3617385264b20e8,13709312,.avi,RIFF/AVI,52494646b02cd100,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/slidspc1.avi,e137f12b05ff02880445c37c402f0b89a548109d1ef770f8b7a2308b06d7ec62,24702976,.avi,RIFF/AVI,5249464640ea7801,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/slidspc2.avi,9d4521c3680606c9dd8f1fe0b890578d558ca5703e8512fbece862db51b86f78,23269376,.avi,RIFF/AVI,52494646900d6301,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+Data/Special/slidspc3.avi,4e4f3e883718227b898a57bc99314a36ee809a5afacb95c654fe685f64253676,19030016,.avi,RIFF/AVI,5249464644582201,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
+DivxDecoder.dll,cc68db0409234d3cd2d2282b0e09dff95acb98ea07fddf08f503ec95d17c4971,397312,.dll,PE,4d5a900003000000,docs/analysis/companion-dlls.md,tools/richhdr.py,ok,Rich header valid
+DivxMediaLib.dll,ed2c45bcb3beab5fd64e51acd7cefc06f3cdb888f21f03d19ae16836dee35ecd,86016,.dll,PE,4d5a900003000000,docs/analysis/companion-dlls.md,tools/richhdr.py,ok,Rich header valid
+DrvMgt.dll,310f5c3c861bcafcf430b3479aff626289230ec56192d7aaf90400d2f449991e,41472,.dll,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+FileParser.dll,196fb53afbf15c02ffc27cba3b4b7ad66b632e70ad68427d042813a8996acf67,86016,.dll,PE,4d5a900003000000,docs/analysis/companion-dlls.md,tools/richhdr.py,ok,Rich header valid
+Input.ini,4286f3476779895fb4577cc2fb73748a2bd47819fd27f9a37e246c74af063709,34157,.ini,INI,3b23232323232323,docs/formats/misc.md,,n/a,no repository parser
+ROTK.exe,95af128c93c63fe5d847609b45f3ba146af56f01c76215389bd1aabf0eb2a5a2,2874240,.exe,PE,4d5a900003000000,docs/research/safe-disc.md,tools/richhdr.py,ok,Rich header valid
+ROTK.ico,92b231f8b5eebfc2e83d0ab2924e1fcbcedc77224096c2439cc4ee55a29fcdff,3262,.ico,ICO,0000010001002020,docs/formats/misc.md,,n/a,no repository parser
+SECDRV.SYS,a85c63f5fb99c8efc9ea3be600629ba611c22c2684c380f49cce03572ad7afc1,12528,.SYS,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich records decoded with checksum mismatch
+Support/EReg.exe,739658240a9cddb11304b8c3e1d3253ee10211652aa2d3707da32b035583649a,1437696,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/EasyInfo.exe,9055efefb0b0185a2ef4900d233c029fb2c4f889b23d4109433e69aa126a32c8,323584,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/LOTR The Return of the King tm_EZ.exe,30662304c470df87a925d8b1bacb7dc4f7e70ab750c9a58c2ecb1e226a5220e6,626688,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/LOTR The Return of the King tm_code.exe,28c51c0aad689251fa93c1a0b92c29f586d39efeac33af29643ba76bd5df2db2,290816,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/LOTR The Return of the King tm_uninst.exe,27bdbdea956eb6791a78cbc47471f6d1a84d40084667825b9ed2249c67ef0d03,86016,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/config.xml,732a3c09d92246bb37fdb3426bad2ce6eca1f4716625bf47810b8d66e1a27db5,897,.xml,XML,3c3f786d6c207665,docs/formats/misc.md,,n/a,no repository parser
+Support/en-us_eahelp.hlp,64f2bff98ba8553b850cc1787cfcdc656ff93b33b0d8528515f830117cf492c1,507358,.hlp,HLP,3f5f03002ac00600,docs/formats/misc.md,,n/a,no repository parser
+Support/en-us_eula.txt,649b3529f60b9fe71da38226f68b263ba4065466098d183be7dd82d4907229d1,6428,.txt,plain text,535550504c454d45,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-de.xml,97677c70d77c791f2a1d82e9829e1a6414ec1e96d1ab2994e768a549b525f01e,7971,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-en_UK.xml,285adf4912938f14fa6c6ce77080cc930a42a9049cef4999ecc1e1cd4ac3c89a,7498,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-en_US.xml,c9b74009835e525f50b8ca37e21061a6b007df96f02089fbd81c4cc967c8dc68,7492,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-es.xml,f031f3edc95b85bdb630ffc266055fd6cb257b5c978cccaabeae51346abd2f56,7474,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-fr_FR.xml,b0b9e769894553bbe87e5fc4589794dfba611258a2fc7f676cd4ec44233c2ebd,7827,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-it.xml,184a3814d2d635548172f439e41cc40efd1dc9439ad03fd41a27e23c495a6fd2,7899,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-ko.xml,dde553e5aa6de5dd2e11f40efaaeca7c05d2b887ccbe690cdf77eb53d52b6deb,7836,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-nl.xml,d3f86a89d5998d8dae2e2a6fa567176fbbe5cda8fbc667bbfa6dfaca9d2af00c,7829,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-pl.xml,ff6c4bfb5ed4de9c93bc292d2124a76350d705b99762023f103cf9c6f1fd620d,7763,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-pt_BR.xml,0a31507590bbc21bff6f44dd00af6bf6fa98f401aeaf2e8a0687124ad0d533e7,7724,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-pt_PT.xml,7b585b66efa9921a5ab3c5da4044f04b29e3c110fd6f05781ee0cea1be9c1fb2,7657,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/ereg-dict-sv.xml,a8a1df690edffc6793c5abd475b511529dfe326f5132da53eed26a6cbbbf8d4f,7729,.xml,XML,efbbbf3c3f786d6c,docs/formats/misc.md,,n/a,no repository parser
+Support/go_ez.exe,4e4263804e6db0e536c466a042549528d94cbd837bba65ee1a37f5403b715abd,69632,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+Support/readme.txt,6550edeae4d0157e04aa3794f5ce2cf0aa6be008f127142374f7db808477ad73,18638,.txt,plain text,3d3d3d3d3d3d3d3d,docs/formats/misc.md,,n/a,no repository parser
+eauninstall.exe,8308e2b8c9fab62ec3ad2446f4031582bd5f49291e6850cb39d3814ecd55dfdb,290816,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+eax.dll,87472db797587d1a6c1834111a92af18095851711887af8b4ad2a6245e3d068c,139264,.dll,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
+filelist.txt,61c1e0103056353763acd4cd956942e6f16c6803aaa1088bcfc59d48ec5e0c0b,364,.txt,plain text,302c302c63616368,docs/formats/misc.md,,n/a,no repository parser
+manifest.txt,1c62041f2e7834d344b2bea91e5d840a733c335069170306a3b974cd92d4b4a4,2189,.txt,plain text,446174615c47616d,docs/formats/misc.md,,n/a,no repository parser
+rotk_uninst.exe,77ed3454839afe80d3a5c37333e163311341b102e44ed72b10ef423072b19fd3,147456,.exe,PE,4d5a900003000000,docs/formats/misc.md,tools/richhdr.py,ok,Rich header valid
