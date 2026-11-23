@@ -67,3 +67,7 @@ validate-dump:
 .PHONY: corpus-formats
 corpus-formats:
 	$(PYTHON) -I tools/corpus_formats.py --game-dir "$(ROTK_GAME_DIR)"
+
+.PHONY: pecat
+pecat:
+	ROTK_GAME_DIR="$(ROTK_GAME_DIR)" $(PYTHON) -I tools/pecat.py
