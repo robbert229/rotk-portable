@@ -104,7 +104,8 @@ class AssetIndexTest(unittest.TestCase):
             "indexed.avi": avi(indexed=True),
             "mission.scw": cots(),
             "global.scw": b"LRTC" + struct.pack("<5I", 24, 0, 0, 0, 0)
-            + chunk(b"COHS", b"RDHS" + struct.pack("<I", 1)) + bytes(8) + b"TADSxxxx",
+            + struct.pack("<4sI8x4sI4sI", b"COHS", 32, b"RDHS", 1, b"TEST", 7)
+            + struct.pack("<4sI8x4s", b"ONOS", 20, b"TADS"),
             "element.xml": b"<root><z>secret</z><a><b/></a><z/></root>",
             "input.ini": b"\xef\xbb\xbf[section]\r\n;secret\r\nkey=secret\n",
             "manual.txt": b"caf\xe9\rline",
@@ -155,8 +156,8 @@ class AssetIndexTest(unittest.TestCase):
                 self.assertEqual(mission[key], expected, key)
             self.assertEqual(mission["embedded_doc_names"],
                              "initial_load|zone_sample||igc_samplebank|igc_sample_zone")
-            self.assertEqual(scenes["global.scw"]["chunk_count"], "1")
-            self.assertEqual(scenes["global.scw"]["walk_end"], "0x30")
+            self.assertEqual(scenes["global.scw"]["chunk_count"], "2")
+            self.assertEqual(scenes["global.scw"]["walk_end"], "0x4c")
 
             videos = read_rows(output / "assets_avi.csv")
             self.assertEqual(videos["indexed.avi"]["has_index"], "1")

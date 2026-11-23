@@ -68,7 +68,7 @@ def scw_metadata(data, name):
                 f"{chunk['tag']}@{chunk['offset']}:{chunk['size']}" for chunk in chunks
             ), cohs_index=joined(
                 f"{item['tag']}@{item['off']}:{item['v1']}"
-                for chunk in chunks for item in chunk.get("index", [])
+                for chunk in chunks if chunk["tag"] == "COHS" for item in chunk.get("index", [])
             ), walk_end=scene["covered"].split()[0],
         )
     if magic != b"COTS":

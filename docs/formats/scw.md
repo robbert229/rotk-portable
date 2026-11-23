@@ -1,112 +1,148 @@
-# `.scw` scene files — COTS (mission) and LRTC (global) containers
+# SCW scene files
 
-C7/D5 deliverable ([spec](../deliverables.md)). Dumper:
-[`tools/scwdump.py`](../../tools/scwdump.py) (`--json` for machine output).
-Corpus: 44 files, ~1.3 GB (`Data/**/*.scw`). Validated: `LoadOnce.scw` (64 KB, kept locally
-in `assets/samples/` — copyrighted, gitignored; extract with `tools/unpac.py`),
-`Game/GlobScen.scw` (5.5 MB), `Game/fro/fro03.scw` (104 MB),
-`Game/osg/osg01.scw` (115 MB), `Game/pel/pel02.scw` (65 MB), `Game/cir/cir01.scw`.
-Claims tagged **observed** / **inferred** / **unknown**.
+[observed: all 44 SCW rows in the retail install
+[`assets_scw.csv`](../../re/corpus/assets_scw.csv)] There are 26 standalone
+LRTC files (`Data/LoadOnce.scw`, `Data/Game/GlobScen.scw`, and the 24
+`Data/Player/*.scw` files) and 18 COTS mission files under `Data/Game/*/`.
+All multibyte integers below are little-endian.
 
-> ⚠️ This is a **container-level** spec: header, TOC, name pools, and region arithmetic are
-> decoded with exact evidence. Zone payload internals (entities, geometry, audio streams)
-> are **not yet decoded** — see Unknowns. The tag vocabulary (`TADS→SDAT`, `CNYS→SYNC`,
-> `ONOS→SONO`, `DAPS→SPAD`, `tadR→Rdat`, `xtrc→crtx`, `pmas→samp`, `gfxt→txfg`) reads as
-> reversed ASCII, consistent with EA's contemporary UAT asset pipeline [inferred].
+[observed: `scwdump.py --json` and `--chunks-csv`]
+[`scwdump.py`](../../tools/scwdump.py) prints the standalone LRTC chunk
+walk or the COTS TOC and aligned tag census. The corpus CSV inventories the
+bounded chunk streams in both families.
 
-## COTS — per-mission scene (majority of `Data/Game/*/*.scw`)
+## LRTC header
 
-| Offset | Type | Value (validated files) | Meaning | Tag |
-|---|---|---|---|---|
-| +0x00 | char[4] | `COTS` | magic | observed |
-| +0x04 | u32 | 308 fro / 716 osg / 416 pel / — cir | global resource count? | **unknown** |
-| +0x08 | u32[2] | 0 | — | observed zero |
-| +0x10 | char[4] | `COTS` | inner chunk tag | observed |
-| +0x14 | u32 | 288/696/396/… | TOC chunk size S (covers table + name pool) | observed |
-| +0x18 | u32 | 8/20/11/7 | entry count N | observed (matches names) |
-| +0x1C | u32 | 1 | TOC version | observed value |
-| +0x20 | u32[2] | 0 | — | observed zero |
-| +0x28 | 16 B | (N, pool_off, 0x10000, x) | **TOC header record** — record 0, name = `initial_load` | observed |
-| +0x38 | 16 B × (N−1) | below | zone/bank records | observed |
-| pool_off | char[] | `initial_load\0zone_…\0igc_…_bank\0…` | NUL-separated names | observed |
+| Offset | Type | Field | Evidence |
+|---|---|---|---|
+| +0x00 | char[4] | `LRTC` | [observed: all 26 standalone files and all 18 COTS initial-load regions] |
+| +0x04 | u32 | Header byte length, 0x18. The first chunk starts at this displacement from the LRTC tag. | [observed: same 44 headers] |
+| +0x08 | u32[2] | Both zero | [observed: same 44 headers; meaning unknown] |
+| +0x10 | char[4] | `CNYS` | [observed: same 44 headers; role unknown] |
+| +0x14 | u32 | Zero | [observed: same 44 headers; meaning unknown] |
 
-Record layout (16 B): `(u32 kind, u32 name_off, u32 f3, u32 f4)`.
+## Shared chunk stream
 
-**Key semantic (observed, all 4 mission files):** `f3` = file **offset** of an embedded
-sub-document, `f4` = its **size**, and records tile the file contiguously:
-`f3[i] + f4[i] == f3[i+1]` for every i, from `0x10000` to the last record end
-(fro03 → 0x1170000, osg01 → 0x1790000, pel02 → 0xec0000, cir01 → 0xa80000).
-Missing zones are literally named `_missingZone_NN` with `f4 = 0` (fro03 zones 01/02/05)
-[observed — corroborates the offset/size reading].
+[observed: all 26 standalone LRTC files and all 211 nonempty COTS TOC
+regions across 18 missions] Chunk offsets and lengths are multiples of 4.
+The size word counts bytes from the tag. The next tag starts at
+`offset + size` with no additional rounding. Resource chunks stay within
+a 0x10000-byte file page. The walk ends exactly at EOF for standalone files
+and exactly at the TOC region end for COTS.
 
-**Embedded sub-document (observed at every record's `f3`):**
+| Offset | Type | Field | Evidence |
+|---|---|---|---|
+| +0x00 | char[4] | `COHS`, `ONOS`, `DDAP`, or `LLIF` | [observed: corpus chunk walks] |
+| +0x04 | u32 | Total chunk size, including the tag and size word. The 4-byte LLIF form has only a tag. | [observed: corpus chunk walks, including `GlobScen.scw` at file+0x51fffc] |
+| +0x08 | u32[2] | Both zero in COHS and ONOS | [observed: all resource chunks in the corpus; meaning unknown] |
+| +0x10 | char[4] | Payload tag. COHS starts with `RDHS`, `TADS`, or `tadR`. ONOS starts with `RDHS` or `TADS`. | [observed: all COHS and ONOS chunks in the corpus] |
+| +0x14 | bytes | Payload fields and data | [unknown: layouts depend on payload tag] |
 
+- [observed: all corpus DDAP chunks] DDAP has zero bytes after the 8-byte
+  header and ends at a 64-byte file boundary. [inferred: zero payload and
+  boundary arithmetic] It pads the stream before the next chunk.
+- [observed: all corpus stream LLIF chunks] LLIF ends at a 0x10000-byte
+  file boundary. The size-bearing form has zero bytes after its header.
+  At the final word of a page, LLIF consists of the tag alone and the
+  next chunk starts on the next page. Examples include `GlobScen.scw`
+  file+0x51fffc, `Char_SaC.scw` file+0xcfffc, and `fro03.scw`
+  file+0xeffffc. [inferred: zero payload and boundary arithmetic]
+  These forms fill the rest of the page.
+- [observed: all 26 standalone files] The initial COHS at file+0x18
+  spans 0x40 bytes. The next COHS starts at file+0x58 and its `TADS`
+  payload starts at file+0x68. `LoadOnce.scw` has 9 chunks and ends
+  with LLIF spanning file+0x2f4 through EOF at 0x10000.
+  `GlobScen.scw` has 758 chunks through EOF at 0x540000. The 26
+  standalone streams contain 4,609 chunks in total.
+
+### RDHS payload prefix
+
+[observed: the first COHS in every standalone LRTC and embedded initial-load
+LRTC, later COHS in `LoadOnce.scw`, ONOS in `GlobScen.scw`, and the first
+COHS after the RVWS header of every nonempty COTS region after initial load]
+The following two tagged words are printed as `index` by the dumper.
+
+| Offset from COHS/ONOS tag | Type | Field | Evidence |
+|---|---|---|---|
+| +0x10 | char[4] | `RDHS` | [observed: RDHS-prefixed chunks] |
+| +0x14 | u32 | Initial LRTC value 1. Later examples include 2 in `LoadOnce.scw` at chunk 0x1a4 and 5 in `fro03.scw` at chunk 0xeb0024. | [observed: example chunks; meaning unknown] |
+| +0x18 | char[4] | `SNPR` in the first LRTC chunk. Later examples include `nidc` at `LoadOnce.scw` chunk 0x9c, `rdhs` at `GlobScen.scw` chunk 0xc0, and `efxt` at `fro03.scw` chunk 0xeb0024. | [observed: example chunks; resource type inferred from variation] |
+| +0x1c | u32 | Value paired with the preceding tag. First standalone LRTC value 1. | [observed: example chunks; meaning unknown] |
+| +0x20 onward | bytes | Remaining descriptor fields or inline data | [unknown: structure and any index-table boundaries] |
+
+[inferred: tag spelling] Several tags read as reversed ASCII, including
+`RDHS` (SHDR), `TADS` (SDAT), and `LLIF` (FILL).
+[unknown: RDHS values and payload layouts] A resource count or index-table
+interpretation for the RDHS words remains unverified. The same applies to
+embedded `tadR`, `gfxt`, `xtrc`, and `pmas` record fields.
+
+## COTS mission container
+
+[observed: all 18 retail COTS files, `assets_scw.csv`] The TOC points to
+bounded regions. The regions start at file+0x10000 and tile contiguously
+through the last TOC entry. A separate unclassified tail extends from there
+to EOF.
+
+| File offset | Type | Field | Evidence |
+|---|---|---|---|
+| +0x00 | char[4] | `COTS` | [observed: all 18 mission headers] |
+| +0x04 | u32 | Equals the LLIF file offset | [observed: all 18 mission headers; stored offset interpretation inferred] |
+| +0x08 | u32[2] | Zero | [observed: all 18 mission headers; meaning unknown] |
+| +0x10 | char[4] | Inner `COTS` tag | [observed: all 18 mission headers] |
+| +0x14 | u32 | TOC size measured from file+0x14 to LLIF | [observed: all 18 mission headers] |
+| +0x18 | u32 | Number of 16-byte TOC entries, including `initial_load` | [observed: all 18 TOCs] |
+| +0x1c | u32 | 1 | [observed: all 18 TOCs; version interpretation inferred] |
+| +0x20 | u32[2] | Zero | [observed: all 18 TOCs; meaning unknown] |
+| +0x28 | u32[4] per entry | Kind, absolute name offset, absolute region offset, region byte length | [observed: all 18 TOCs; meaning of kind values unknown] |
+| After entries | 4 bytes, then char[] | 4-byte gap, then NUL-separated name pool | [observed: all 18 TOCs] |
+| LLIF offset | char[4], u32, bytes | `LLIF`, total size through file+0x10000, payload | [observed: all 18 missions; payload layout unknown] |
+
+[observed: all 18 TOCs, including `fro03.scw` slots 01/02/05] Entry 0
+has a kind equal to the entry count and is named `initial_load`. Other
+entries have kinds 0–3. The `_missingZone_NN` slots have length zero.
+[inferred: labels in the TOC] `zone_*` entries correspond to gameplay
+zones. Some `igc_*_bank` labels suggest cinematic audio banks.
+[unknown: contents of individual named banks and zone resources]
+
+### RVWS regions
+
+[observed: 211 nonempty entries across all 18 mission TOCs] Each region
+starts with an RVWS header. The initial-load region has an embedded LRTC
+header at file+0x10024. The other 193 nonempty regions start their first
+COHS directly after RVWS. The shared stream walk reaches each region's TOC
+end, including in named bank regions.
+
+| Offset from RVWS tag | Type | Field | Evidence |
+|---|---|---|---|
+| +0x00 | char[4] | `RVWS` | [observed: all 211 regions] |
+| +0x04 | u32 | Header size 0x24 including tag and size | [observed: all 211 regions] |
+| +0x08 | u32[2] | Both zero | [observed: all 211 regions; meaning unknown] |
+| +0x10 | char[4] | `ELIF` | [observed: all 211 regions] |
+| +0x14 | char[16] | NUL-terminated name, sometimes shortened relative to the TOC name | [observed: all 211 regions, e.g. `fro03.scw` file+0xeb0014] |
+
+[unknown: COTS tail framing] The remaining bytes begin at the last TOC
+region end recorded in `assets_scw.csv` for each mission. For example,
+`fro03.scw` has a zero-filled page at file+0x1170000 followed by a
+nonzero page at 0x1180000. Its tail extends to EOF at 0x6340000.
+[observed: `fro03.scw` at the listed offsets]
+
+## Chunk inventory
+
+[observed: `scw_chunks.csv`, retail walk] The inventory has 92,419 rows.
+The COTS portion contains 87,501 stream chunks, 211 RVWS headers, 18
+embedded LRTC headers, 18 COTS headers, and 36 inner TOC and leading LLIF
+chunks. The LRTC
+portion contains 4,609 stream chunks and 26 headers. Header rows give the
+header span. The inner COTS row spans its tag, TOC, and name pool up to the
+leading LLIF. COTS tails remain unclassified.
+
+`path` is install-relative. `offset` and `parent` are absolute file offsets
+in hex. `size` is a decimal byte length and `index` is the zero-based
+ordinal within the stream, or the TOC ordinal for RVWS. A parent points
+to the header for the stream or TOC. Empty parents mark root rows.
+`notes` labels the observed payload tag, filler, or header role.
+Regenerate from the retail install with isolated Python.
+
+```sh
+python3 -I tools/scwdump.py "$ROTK_GAME_DIR" --chunks-csv > out/scw_chunks.csv
 ```
-+0x00 char[4] 'RVWS'   sub-document directory        [observed]
-+0x04 u32     size     directory region size         [observed]
-+0x08 'ELIF' + char[]  entry name ("FILE" reversed): matches the TOC record name
-                       (e.g. initial_load, zone_pel02_zone1, igc_pele_igc1_b…)
-+0x24 'LRTC' …         full embedded LRTC stream (same shape as standalone .scw files,
-                       incl. CNYS/COHS chunks)       [observed for initial_load;
-                       zones: LRTC marker not located within dir region — [unknown]]
-```
-
-Record `kind` values [observed]: first zone = 1, most zones/first igc bank = 2,
-remaining igc banks = 3, `_missing` zones = 0 or 2. Semantics of 0/1/2/3: **unknown**.
-
-After the TOC follows a `LLIF` chunk (tag at TOC-declared end − 4):
-
-| | Value | Tag |
-|---|---|---|
-| Tag position | TOC declared end − 4 | observed (4 B gap also between table_end and pool_off) |
-| `LLIF` size | 65,228 / 64,820 / 65,120 / 65,256 across 4 files | observed — near-constant ~64 KB blob |
-| Payload | starts with many zeros; tail region (~+0xFE84) contains sub-records: `SVWS` (size 0x24), reversed `ELIF` = "FILE" markers, names like `initial_load`, and script strings `PLAY, 0, 1, 255, 0` (seen in fro03 at ≈0x10128) | observed bytes; structure **unknown** |
-
-Body region records (offsets ≈ f3 of the zone/bank records): aligned 4-char record tags
-with unknown record framing; census in the first 2 MB, e.g. fro03: `tadR`×246, `COHS`×242,
-`gfxt`×227, `LLIF`×31, `xtrc`×18, `RDHS`×9, `zfxt`×9, `TADS`×4. A sample record at
-0x17fc0 (fro03): `COHS` size 0x1ffc, payload of `(tag, u32 ×5)` rows, e.g.
-`tadR 0 0x12fc80 0x405008 0x4ab018 4 0x12fdb0`, `gfxt 9 0x12fe74 0x4033a1 0x12feb4…`
-[observed bytes; fields **unknown**].
-
-### Interpretation notes
-
-- Zone names + `PLAY, …` script strings + the `_missingZone_` fallback ⇒ records 1.. are
-  gameplay **zones** loaded by the `initial_load` script [inferred].
-- `igc_*_bank` records are **in-game-cinematic audio banks** — ROTK's FMV `.avi`s carry no
-  audio (D3 evidence), so this is where cutscene/speech audio lives [inferred,
-  consistent]; format inside = **unknown** (likely Fronteset-era EA sample banks; `pmas`→
-  `samp` supports a sample directory [inferred]).
-- `TADS` payload begins with the bytes `"SDAT""\r\n\r\n "`-style text (`22 22 0d 0a 0d 0a 20`)
-  — resembles a RenderWare-style `SDAT` section header [observed bytes; format unknown].
-
-## LRTC — global/boot scene (`GlobScen.scw`, `LoadOnce.scw`)
-
-| Offset | Type | Value | Meaning | Tag |
-|---|---|---|---|---|
-| +0x00 | char[4] | `LRTC` | magic | observed |
-| +0x04 | u32 | 0x18 | header size (chunks start here) | observed (both files) |
-| +0x08 | u32[4] | 0 | — | observed zero |
-| +0x18 | chunk | `COHS`, size 0x40 | first chunk; payload = index of `(tag, u32)` pairs: `RDHS 1`, `SNPR 1`, `COHS 0x44` | observed |
-| after | | zeros to 16 B, then `TADS` whose "size" field contains ASCII | walker stops; deeper nesting undecoded | **unknown** |
-
-Both LRTC files walk identically to offset 0x60 [observed]; `scwdump.py` reports the stop
-point honestly instead of guessing.
-
-## Size-arithmetic reconciliation (acceptance criterion)
-
-- COTS: `TOC = 8(hdr) + 16(N+1) + 4(gap) + pool` — validated on 4 files
-  (`table_end` = pool_off − 4 exactly; see `scwdump.py` output).
-- Offset/size chain contiguity: **True on all 4 validated mission files** (tool-computed).
-- `LLIF` chunk at `TOC_declared_end − 4`, size ≈ 64 KB in every file.
-
-## Unknowns / follow-ons
-
-1. Zone payload record framing (entity/spawner/geometry/AI) — needs deeper record-walking
-   from the f3 offsets; `xtrc`/`tadR`/`gfxt`/`zfxt` field meanings.
-2. `u32@0x04` meaning; kind 0/1/2/3 semantics; f3/f4 unit scale (likely raw bytes —
-   offsets fit file span for smaller missions).
-3. LRTC full chunk stream beyond 0x60 (GlobScen/LoadOnce only).
-4. Whether zone payloads embed `.GEO`-like geometry (no standalone .GEO outside `fro/`).
-5. Audio bank internal format (`pmas`/`ONOS`) — the FMV-audio answer from D3 likely lives
-   here.
