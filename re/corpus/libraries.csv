@@ -1,0 +1,201 @@
+binary,library,version,evidence_kind,offset,evidence,confidence
+DivxDecoder.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x21 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_C 10/8047 x98 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Unmarked (old),rich,0x000000a8,[observed: Unknown 0/0 x15 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Unmarked,rich,0x000000b0,[observed: Import0 1/0 x73 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Linker 5.12,rich,0x000000b8,[observed: Linker512 19/8034 x3 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000c0,[observed: Utc12_2_C 48/9044 x48 (valid)],observed
+DivxDecoder.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000c8,[observed: Linker600 4/8447 x1 (valid)],observed
+DivxDecoder.dll,Microsoft CRT,6.0 family,string,0x0004c67c,[inferred: Microsoft Visual C++ Runtime Library],inferred
+DivxDecoder.dll,DivX playback SDK,unknown,string,0x0004d060,[observed: DivxDecode],observed
+DivxMediaLib.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x21 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_C 10/8047 x101 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Linker 5.12,rich,0x000000a8,[observed: Linker512 19/8034 x3 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Unmarked,rich,0x000000b0,[observed: Import0 1/0 x96 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000b8,[observed: Utc12_2_C 48/9044 x2 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000c0,[observed: Utc12_2_CPP 49/9044 x1 (valid)],observed
+DivxMediaLib.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000c8,[observed: Linker600 4/8447 x5 (valid)],observed
+DivxMediaLib.dll,Microsoft CRT,6.0 family,string,0x0000d9ec,[inferred: Microsoft Visual C++ Runtime Library],inferred
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000defe,[observed: DivxDecode],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,import,0x0000df0a,[observed: DivxDecoder.dll],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000df5c,[observed: divxSplitterFileParse],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,import,0x0000e034,[observed: FileParser.dll],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000e56a,[observed: DivxGetSDKVersion],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000e663,[observed: OpenDivxFile],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000f1a4,[observed: OpenDivxFile],observed
+DivxMediaLib.dll,DivX playback SDK,unknown,string,0x0000f1b4,[observed: OpenDivXFile],observed
+DrvMgt.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+DrvMgt.dll,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x20 (valid)],observed
+DrvMgt.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_C 10/8047 x61 (valid)],observed
+DrvMgt.dll,Microsoft build tools,Linker 5.12,rich,0x000000a8,[observed: Linker512 19/8034 x7 (valid)],observed
+DrvMgt.dll,Microsoft build tools,Unmarked,rich,0x000000b0,[observed: Import0 1/0 x99 (valid)],observed
+DrvMgt.dll,Microsoft build tools,Visual C++ 6.0 SP5,rich,0x000000b8,[observed: Utc12_C 10/8966 x6 (valid)],observed
+DrvMgt.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000c0,[observed: Linker600 4/8447 x1 (valid)],observed
+DrvMgt.dll,Microsoft CRT,6.0 family,string,0x00005c4c,[inferred: Microsoft Visual C++ Runtime Library],inferred
+DrvMgt.dll,SafeDisc,unknown,string,0x000066d6,[inferred: drvmgt.dll],inferred
+DrvMgt.dll,SafeDisc,unknown,string,0x000068cd,[inferred: SECDRV.SYS],inferred
+FileParser.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: AliasObj60 12/7291 x1 (valid)],observed
+FileParser.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000098,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+FileParser.dll,Microsoft build tools,MASM 6.13,rich,0x000000a0,[observed: Masm613 14/7299 x21 (valid)],observed
+FileParser.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000a8,[observed: Utc12_C 10/8047 x106 (valid)],observed
+FileParser.dll,Microsoft build tools,Linker 5.12,rich,0x000000b0,[observed: Linker512 19/8034 x3 (valid)],observed
+FileParser.dll,Microsoft build tools,Unmarked,rich,0x000000b8,[observed: Import0 1/0 x83 (valid)],observed
+FileParser.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000c0,[observed: Utc12_2_C 48/9044 x4 (valid)],observed
+FileParser.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000c8,[observed: Utc12_2_CPP 49/9044 x1 (valid)],observed
+FileParser.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000d0,[observed: Linker600 4/8447 x1 (valid)],observed
+FileParser.dll,Microsoft CRT,6.0 family,string,0x0000d918,[inferred: Microsoft Visual C++ Runtime Library],inferred
+FileParser.dll,DivX playback SDK,unknown,string,0x0000e346,[observed: divxSplitterFileParse],observed
+FileParser.dll,DivX playback SDK,unknown,string,0x0000f088,[observed: Not DIVX 5.0 encoded],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002-era import library,rich,0x00000090,[observed: Implib700 25/9210 x9 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual C++ 6.0 SP4,rich,0x00000098,[observed: Utc12_CPP 11/8799 x1 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x000000a0,[observed: AliasObj70 39/9162 x3 (valid)],observed
+ROTK.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x000000a8,[observed: Utc13_C 28/9178 x4 (valid)],observed
+ROTK.exe,Microsoft build tools,Unmarked,rich,0x000000b0,[observed: Import0 1/0 x156 (valid)],observed
+ROTK.exe,Microsoft build tools,MASM 6.14,rich,0x000000b8,[observed: Masm614 18/8444 x1 (valid)],observed
+ROTK.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x000000c0,[observed: Utc13_CPP 29/9178 x12 (valid)],observed
+ROTK.exe,Microsoft build tools,Unmarked (old),rich,0x000000c8,[observed: Unknown 0/0 x8 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d0,[observed: Utc13_CPP 29/9466 x10 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d8,[observed: Masm700 64/9466 x43 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000e0,[observed: Utc13_C 28/9466 x563 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000e8,[observed: Export700 63/9466 x1 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000f0,[observed: Cvtres700 69/9466 x1 (valid)],observed
+ROTK.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000f8,[observed: Linker700 61/9466 x1 (valid)],observed
+ROTK.exe,SafeDisc,unknown,string,0x00000300,[inferred: stxt774 section name],inferred
+ROTK.exe,SafeDisc,unknown,string,0x00000328,[inferred: stxt371 section name],inferred
+ROTK.exe,EAX Unified,unknown,string,0x00138760,[observed: EAXDirectSoundCreate8],observed
+ROTK.exe,libmad,unknown,string,0x0013dcab,[inferred: rcmp_mad_codec.c],inferred
+ROTK.exe,Microsoft CRT,7.0,string,0x00146f04,[inferred: Microsoft Visual C++ Runtime Library],inferred
+ROTK.exe,D3DX8,unknown,string,0x0014b230,[inferred: DisableD3DXPSGP],inferred
+ROTK.exe,D3DX8,unknown,table,0x0014b260,[observed: d3dxmathx3d.obj .rdata constants],observed
+ROTK.exe,dxguid,unknown,table,0x0014b3cc,[observed: DS3DALG_HRTF_LIGHT],observed
+ROTK.exe,dxguid,unknown,table,0x0014b4fc,[observed: IID_IDirectInput8A],observed
+ROTK.exe,DXErr8,unknown,string,0x0014bf2c,[inferred: DMUS_E_INVALID_CONTAINER_OBJECT],inferred
+ROTK.exe,DXErr8,unknown,string,0x0014cb5c,[inferred: D3DXERR_CANNOTATTRSORT],inferred
+ROTK.exe,Windows ACM,unknown,string,0x001582e0,[inferred: MSACM32.dll],inferred
+ROTK.exe,DirectX,unknown,string,0x00158310,[inferred: DSOUND.dll],inferred
+ROTK.exe,DirectX,8 API,string,0x001586ca,[observed: Direct3DCreate8],observed
+ROTK.exe,DirectX,8 API,string,0x001586dc,[observed: DirectInput8Create],observed
+ROTK.exe,DivX playback SDK,unknown,string,0x00158848,[observed: OpenDivxFile],observed
+SECDRV.SYS,Microsoft build tools,Visual Studio 97 SP3,rich,0x00000090,[observed: Cvtres500 6/1668 x1 (legacy checksum)],observed
+SECDRV.SYS,Microsoft build tools,Unmarked (old),rich,0x00000098,[observed: Unknown 0/0 x31 (legacy checksum)],observed
+SECDRV.SYS,SafeDisc,3.19.000,string,0x00002884,[observed: FileVersion 3.19.000],observed
+Support/EReg.exe,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8798 x3 (valid)],observed
+Support/EReg.exe,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x23 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_CPP 11/8047 x8 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Visual C++ 6.0,rich,0x000000a8,[observed: Utc12_C 10/8047 x95 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Visual C++ 6.0 SP5,rich,0x000000b0,[observed: Utc12_C 10/8966 x8 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Unmarked (old),rich,0x000000b8,[observed: Unknown 0/0 x35 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Linker 5.12,rich,0x000000c0,[observed: Linker512 19/8022 x15 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Linker 5.12,rich,0x000000c8,[observed: Linker512 19/8034 x15 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Unmarked,rich,0x000000d0,[observed: Import0 1/0 x190 (valid)],observed
+Support/EReg.exe,Microsoft build tools,Visual C++ 6.0 SP5,rich,0x000000d8,[observed: Utc12_CPP 11/8966 x3 (valid)],observed
+Support/EReg.exe,Microsoft build tools,CVTRES 5.00,rich,0x000000e0,[observed: Cvtres500 6/1735 x1 (valid)],observed
+Support/EReg.exe,Microsoft CRT,6.0 family,string,0x00012fb4,[inferred: Microsoft Visual C++ Runtime Library],inferred
+Support/EReg.exe,zlib,1.1.3,string,0x000154cc,[inferred: 1.1.3 near inflate errors],inferred
+Support/EReg.exe,zlib,unknown,string,0x000168dc,[inferred: oversubscribed dynamic bit lengths tree],inferred
+Support/EReg.exe,Microsoft C++ COM support,unknown,string,0x00019698,[inferred: .?AV_com_error@@],inferred
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x00000090,[observed: AliasObj70 39/9162 x2 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x00000098,[observed: Masm700 64/9466 x28 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x000000a0,[observed: Implib700 25/9111 x4 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000a8,[observed: Utc13_C 28/9466 x142 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2003 family,rich,0x000000b0,[observed: Implib710 93/2179 x19 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Unmarked,rich,0x000000b8,[observed: Import0 1/0 x125 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c0,[observed: Utc13_CPP 29/9466 x53 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c8,[observed: Cvtres700 69/9466 x1 (valid)],observed
+Support/EasyInfo.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d0,[observed: Linker700 61/9466 x1 (valid)],observed
+Support/EasyInfo.exe,DirectX,unknown,string,0x00036d19,[inferred: ddraw.dll],inferred
+Support/EasyInfo.exe,Microsoft C++ standard library,unknown,string,0x0003a0f0,[inferred: ios_base::failbit set],inferred
+Support/EasyInfo.exe,Microsoft CRT,7.0,string,0x0003b1bc,[inferred: Microsoft Visual C++ Runtime Library],inferred
+Support/EasyInfo.exe,DirectX,unknown,import,0x00040c7c,[observed: DDRAW.dll],observed
+Support/EasyInfo.exe,DirectX,unknown,string,0x00040c7c,[inferred: DDRAW.dll],inferred
+Support/EasyInfo.exe,DirectX,unknown,import,0x00040c86,[observed: DSOUND.dll],observed
+Support/EasyInfo.exe,DirectX,unknown,string,0x00040c86,[inferred: DSOUND.dll],inferred
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x00000090,[observed: AliasObj70 39/9162 x1 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Linker 6.20,rich,0x00000098,[observed: Linker620 37/8755 x2 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x000000a0,[observed: Utc13_C 28/9178 x7 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000a8,[observed: Masm700 64/9466 x29 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b0,[observed: Utc13_C 28/9466 x153 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x000000b8,[observed: AliasObj70 39/8491 x9 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002-era import library,rich,0x000000c0,[observed: Implib700 25/9210 x29 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Unmarked,rich,0x000000c8,[observed: Import0 1/0 x590 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x000000d0,[observed: Utc13_CPP 29/9177 x1 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d8,[observed: Utc13_CPP 29/9466 x142 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000e0,[observed: Cvtres700 69/9466 x1 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000e8,[observed: Linker700 61/9466 x1 (valid)],observed
+Support/LOTR The Return of the King tm_EZ.exe,DirectX,unknown,string,0x00048370,[inferred: DSound.dll],inferred
+Support/LOTR The Return of the King tm_EZ.exe,DirectX,unknown,string,0x0004837c,[inferred: ddraw.dll],inferred
+Support/LOTR The Return of the King tm_EZ.exe,DirectX,unknown,string,0x000484d4,[inferred: DDRAW.DLL],inferred
+Support/LOTR The Return of the King tm_EZ.exe,DirectX,unknown,string,0x00048970,[inferred: DDraw.dll],inferred
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft MFC,7.0,string,0x0004996c,[inferred: AfxWnd70s],inferred
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft CRT,7.0,string,0x0004d968,[inferred: Microsoft Visual C++ Runtime Library],inferred
+Support/LOTR The Return of the King tm_EZ.exe,Microsoft ATL,unknown,string,0x0005c4dc,[inferred: .?AVCComObjectRootBase@ATL@@],inferred
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Linker 6.20,rich,0x00000090,[observed: Linker620 37/8755 x2 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x00000098,[observed: Utc13_C 28/9178 x7 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002-era import library,rich,0x000000a0,[observed: Implib700 25/9210 x21 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Unmarked,rich,0x000000a8,[observed: Import0 1/0 x530 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b0,[observed: Masm700 64/9466 x28 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b8,[observed: Utc13_C 28/9466 x134 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c0,[observed: Utc13_CPP 29/9466 x100 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c8,[observed: Cvtres700 69/9466 x1 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d0,[observed: Linker700 61/9466 x1 (valid)],observed
+Support/LOTR The Return of the King tm_code.exe,Microsoft MFC,7.0,string,0x0001f55c,[inferred: AfxWnd70s],inferred
+Support/LOTR The Return of the King tm_code.exe,Microsoft CRT,7.0,string,0x00020d0c,[inferred: Microsoft Visual C++ Runtime Library],inferred
+Support/LOTR The Return of the King tm_code.exe,Microsoft ATL,unknown,string,0x0002910c,[inferred: .?AVCComObjectRootBase@ATL@@],inferred
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x14 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_C 10/8047 x46 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,Unmarked,rich,0x000000a8,[observed: Import0 1/0 x48 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,Linker 5.12,rich,0x000000b0,[observed: Linker512 19/8034 x5 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000b8,[observed: Utc12_2_C 48/9044 x1 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft build tools,CVTRES 5.00,rich,0x000000c0,[observed: Cvtres500 6/1735 x1 (valid)],observed
+Support/LOTR The Return of the King tm_uninst.exe,Microsoft CRT,6.0 family,string,0x00006404,[inferred: Microsoft Visual C++ Runtime Library],inferred
+Support/go_ez.exe,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x1 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,Visual C++ 6.0,rich,0x00000098,[observed: Utc12_C 10/8047 x26 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,MASM 6.13,rich,0x000000a0,[observed: Masm613 14/7299 x12 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,Linker 6.20,rich,0x000000a8,[observed: Linker620 37/8755 x3 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,Unmarked,rich,0x000000b0,[observed: Import0 1/0 x40 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,Visual C++ 6.0 SP5,rich,0x000000b8,[observed: Utc12_CPP 11/8966 x2 (valid)],observed
+Support/go_ez.exe,Microsoft build tools,CVTRES 5.00,rich,0x000000c0,[observed: Cvtres500 6/1735 x1 (valid)],observed
+Support/go_ez.exe,Microsoft CRT,6.0 family,string,0x00005368,[inferred: Microsoft Visual C++ Runtime Library],inferred
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002-era,rich,0x00000090,[observed: AliasObj70 39/9162 x3 (valid)],observed
+eauninstall.exe,Microsoft build tools,Linker 6.20,rich,0x00000098,[observed: Linker620 37/8755 x2 (valid)],observed
+eauninstall.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x000000a0,[observed: Utc13_C 28/9178 x8 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000a8,[observed: Masm700 64/9466 x29 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b0,[observed: Utc13_C 28/9466 x186 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002-era import library,rich,0x000000b8,[observed: Implib700 25/9210 x23 (valid)],observed
+eauninstall.exe,Microsoft build tools,Unmarked,rich,0x000000c0,[observed: Import0 1/0 x569 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c8,[observed: Utc13_CPP 29/9466 x113 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d0,[observed: Cvtres700 69/9466 x1 (valid)],observed
+eauninstall.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d8,[observed: Linker700 61/9466 x1 (valid)],observed
+eauninstall.exe,MiniZip,0.15,string,0x00027c49,[observed: unzip 0.15 Copyright 1998 Gilles Vollant],observed
+eauninstall.exe,CRC-32,unknown,table,0x00027c88,[observed: IEEE CRC-32 look-up table],observed
+eauninstall.exe,zlib,1.1.4,string,0x00028149,[observed: inflate 1.1.4 Copyright 1995-2002 Mark Adler],observed
+eauninstall.exe,Microsoft MFC,7.0,string,0x0002868c,[inferred: AfxWnd70s],inferred
+eauninstall.exe,Microsoft CRT,7.0,string,0x0002a754,[inferred: Microsoft Visual C++ Runtime Library],inferred
+eauninstall.exe,Microsoft ATL,unknown,string,0x00031a14,[inferred: .?AVCComObjectRootBase@ATL@@],inferred
+eax.dll,Microsoft build tools,Visual C++ 6.0,rich,0x00000090,[observed: Utc12_CPP 11/8047 x8 (valid)],observed
+eax.dll,Microsoft build tools,MASM 6.13,rich,0x00000098,[observed: Masm613 14/7299 x28 (valid)],observed
+eax.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000a0,[observed: Utc12_C 10/8047 x84 (valid)],observed
+eax.dll,Microsoft build tools,Visual Studio .NET 2003 family,rich,0x000000a8,[observed: Utc1310_C 95/2190 x1 (valid)],observed
+eax.dll,Microsoft build tools,Visual Studio .NET 2003 family,rich,0x000000b0,[observed: Implib710 93/2179 x9 (valid)],observed
+eax.dll,Microsoft build tools,Unmarked,rich,0x000000b8,[observed: Import0 1/0 x85 (valid)],observed
+eax.dll,Microsoft build tools,Visual C++ 6.0 Processor Pack,rich,0x000000c0,[observed: Utc12_2_CPP 49/9044 x12 (valid)],observed
+eax.dll,Microsoft build tools,CVTRES 5.00,rich,0x000000c8,[observed: Cvtres500 6/1735 x1 (valid)],observed
+eax.dll,Microsoft build tools,Visual C++ 6.0,rich,0x000000d0,[observed: Linker600 4/8447 x1 (valid)],observed
+eax.dll,Microsoft CRT,6.0 family,string,0x000189b4,[inferred: Microsoft Visual C++ Runtime Library],inferred
+eax.dll,EAX Unified,unknown,string,0x0001959e,[observed: EAXDirectSoundCreate8],observed
+eax.dll,EAX Unified,3.066,string,0x0001f1c4,[observed: FileVersion 3.066],observed
+rotk_uninst.exe,Microsoft build tools,Linker 6.20,rich,0x00000090,[observed: Linker620 37/8755 x2 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Windows XP SP1 DDK (VC 13.00),rich,0x00000098,[observed: Utc13_C 28/9178 x7 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002-era import library,rich,0x000000a0,[observed: Implib700 25/9210 x21 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Unmarked,rich,0x000000a8,[observed: Import0 1/0 x531 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b0,[observed: Masm700 64/9466 x27 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000b8,[observed: Utc13_C 28/9466 x140 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c0,[observed: Utc13_CPP 29/9466 x95 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000c8,[observed: Cvtres700 69/9466 x1 (valid)],observed
+rotk_uninst.exe,Microsoft build tools,Visual Studio .NET 2002 RTM,rich,0x000000d0,[observed: Linker700 61/9466 x1 (valid)],observed
+rotk_uninst.exe,Microsoft MFC,7.0,string,0x000180a4,[inferred: AfxWnd70s],inferred
+rotk_uninst.exe,Microsoft CRT,7.0,string,0x00019214,[inferred: Microsoft Visual C++ Runtime Library],inferred
+rotk_uninst.exe,Microsoft ATL,unknown,string,0x0001d424,[inferred: .?AVCComObjectRootBase@ATL@@],inferred

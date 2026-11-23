@@ -63,3 +63,10 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 .PHONY: validate-dump
 validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+
+.PHONY: libscan refs
+libscan:
+	$(PYTHON) -I tools/libscan.py "$(ROTK_GAME_DIR)" --output re/corpus/libraries.csv
+
+refs:
+	$(PYTHON) -I tools/refs.py fetch
