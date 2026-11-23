@@ -75,3 +75,7 @@ pecat:
 .PHONY: assetindex
 assetindex:
 	$(PYTHON) -BI tools/assetindex.py --game-dir "$(ROTK_GAME_DIR)"
+
+.PHONY: filerefs
+filerefs:
+	$(PYTHON) -I tools/filerefs.py --game-dir "$(ROTK_GAME_DIR)"
