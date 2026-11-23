@@ -3,29 +3,19 @@
 
 Spec: docs/formats/scw.md. Dependency-free (stdlib only).
 
-Two container families are observed on disk:
-  * COTS — per-mission scenes (Data/Game/<lvl>/<lvl>NN.scw), header 'COTS':
-      +0x00 char[4] 'COTS'
-      +0x04 u32     unknown global (308 fro03 / 0x2cc osg01 / 0x1a0 pel02)
-      +0x08 16B     zeros
-      +0x20 char[4] 'COTS' ; +0x24 u32 chunk size S (covers TOC + string pool)
-      +0x28 TOC: (count+1) x 16-byte records:
-            u32 kind, u32 name_off, u32 f3, u32 f4   (f3/f4: unknown)
-          record 0 = 'initial_load' (kind field = entry count, see spec);
-          zone records kind 1/2, igc audio-bank records kind 3 (observed);
-          followed by the NUL-separated name pool up to +0x20+8+S.
-      then 'LLIF' chunk, zone payloads (tadR/gfxt/RDHS/TADS/ONOS/… records).
-  * LRTC — global/boot scenes (GlobScen.scw, LoadOnce.scw), header 'LRTC':
-      +0x00 char[4] 'LRTC' ; +0x04 u32 header size (0x18 observed)
-      then top-level chunks: char[4] tag + u32 size + payload
-      (observed tags: CNYS, COHS, RDHS, SNPR, TADS, DAPS, ONOS, …)
+COTS missions contain a TOC and bounded RVWS regions. LRTC scenes contain
+a header followed by a stream of size-prefixed chunks.
 
 Usage:
     python3 tools/scwdump.py FILE.scw [--json] [--scan-bytes N]
+    python3 tools/scwdump.py [GAME_DIR] --chunks-csv | --summary-csv
 """
 import argparse
 import collections
+import csv
 import json
+import mmap
+from pathlib import Path
 import re
 import struct
 import sys
@@ -136,52 +126,208 @@ def dump_cots(d, name, scan_bytes):
     return out
 
 
+PAGE_SIZE = 0x10000
+STREAM_TAGS = {b"COHS", b"ONOS", b"DDAP", b"LLIF"}
+
+
+def walk_chunks(d, start, end):
+    """Return complete chunks and the first unparsed offset, within [start, end)."""
+    chunks = []
+    p = start
+    while p < end:
+        raw_tag = d[p:min(p + 4, end)]
+        tag = raw_tag.decode("ascii", errors="replace")
+        size = None
+        if raw_tag not in STREAM_TAGS:
+            note = "unrecognized stream tag"
+        elif raw_tag == b"LLIF" and p % PAGE_SIZE == PAGE_SIZE - 4 and end - p >= 4:
+            size = 4  # tag-only filler in the last word of a page
+            note = None
+        elif end - p < 8:
+            note = "truncated chunk header"
+        else:
+            (size,) = struct.unpack_from("<I", d, p + 4)
+            if size < 8 or size % 4 or size > end - p:
+                note = "invalid chunk size for containing region"
+            elif raw_tag == b"LLIF" and (p + size) % PAGE_SIZE:
+                note = "LLIF does not end at a page boundary"
+            elif raw_tag == b"DDAP" and (p + size) % 64:
+                note = "DDAP does not end at a 64-byte boundary"
+            elif raw_tag in (b"LLIF", b"DDAP") and any(d[p + 8:p + size]):
+                note = "nonzero filler payload"
+            elif raw_tag in (b"COHS", b"ONOS") and (
+                size < 20 or size > PAGE_SIZE - p % PAGE_SIZE
+            ):
+                note = "resource chunk lacks a payload tag or crosses a page boundary"
+            else:
+                note = None
+        if note:
+            stop = {"offset": hex(p), "tag": tag, "note": note}
+            if size is not None:
+                stop["size"] = size
+            return chunks, p, stop
+
+        entry = {"offset": hex(p), "tag": tag, "size": size, "reversed": tag[::-1]}
+        if raw_tag in (b"COHS", b"ONOS"):
+            entry["payload_tag"] = d[p + 16:p + 20].decode("ascii", errors="replace")
+            # RDHS starts with two tagged words. Later bytes can contain inline data.
+            if entry["payload_tag"] == "RDHS" and size >= 32:
+                entry["index"] = []
+                for q in (p + 16, p + 24):
+                    identifier, value = struct.unpack_from("<4sI", d, q)
+                    entry["index"].append({
+                        "tag": identifier.decode("ascii", errors="replace"),
+                        "v1": hex(value), "off": hex(q),
+                    })
+        chunks.append(entry)
+        p += size
+    return chunks, p, None
+
+
+def lrtc_header_size(d, start, end):
+    if end - start < 8 or d[start:start + 4] != b"LRTC":
+        raise ValueError("missing or truncated LRTC header")
+    (size,) = struct.unpack_from("<I", d, start + 4)
+    if size < 8 or size % 4 or size > end - start:
+        raise ValueError("invalid LRTC header size")
+    return size
+
+
 def dump_lrtc(d, name):
     out = {"file": name, "kind": "LRTC", "magic": "LRTC"}
-    (hdr_size,) = struct.unpack_from("<I", d, 4)
-    out["header_size"] = hdr_size
-    chunks = []
-    p = hdr_size
-    while p + 8 <= len(d) and len(chunks) < 400:
-        tag = d[p:p + 4]
-        if not re.fullmatch(rb"[A-Za-z_]{4}", tag):
-            break
-        (sz,) = struct.unpack_from("<I", d, p + 4)
-        if sz > len(d) - p:
-            out["stopped_at"] = {"offset": hex(p), "tag": tag.decode(), "size": sz,
-                                 "note": "size exceeds EOF — LRTC sub-TOC structure not fully "
-                                         "decoded (see spec, Unknowns)"}
-            break
-        t = tag.decode()
-        entry = {"offset": hex(p), "tag": t, "size": sz,
-                 "reversed": t[::-1]}
-        if t == "COHS" and sz >= 8:  # nested index: (tag, u32) pairs
-            inner = []
-            q = p + 8
-            while q + 8 <= p + 8 + sz:
-                it = d[q:q + 4]
-                if re.fullmatch(rb"[A-Za-z_]{4}", it):
-                    (v1,) = struct.unpack_from("<I", d, q + 4)
-                    inner.append({"tag": it.decode(), "v1": hex(v1), "off": hex(q)})
-                    q += 8
-                else:
-                    q += 4
-            entry["index"] = inner[:40]
-        chunks.append(entry)
-        p += 8 + sz
-        p = (p + 15) & ~15  # chunks observed padded to 16
-    out["chunks"] = chunks
-    out["covered"] = hex(p) + " / " + hex(len(d))
+    try:
+        hdr_size = lrtc_header_size(d, 0, len(d))
+    except ValueError as error:
+        out["error"] = str(error)
+        return out
+    chunks, end, stop = walk_chunks(d, hdr_size, len(d))
+    out.update(header_size=hdr_size, chunks=chunks, covered=f"{end:#x} / {len(d):#x}")
+    if stop:
+        out["stopped_at"] = stop
     return out
+
+
+def stream_rows(d, start, end, parent):
+    chunks, _, stop = walk_chunks(d, start, end)
+    if stop:
+        raise ValueError(f"at {stop['offset']} ({stop['tag']!r}): {stop['note']}")
+    for i, chunk in enumerate(chunks):
+        tag = chunk["tag"]
+        if "payload_tag" in chunk:
+            notes = f"payload tag {chunk['payload_tag']}"
+        elif tag == "LLIF" and chunk["size"] == 4:
+            notes = "tag-only page filler"
+        else:
+            notes = "zero-filled payload"
+        yield chunk["offset"], tag, chunk["size"], i, hex(parent), notes
+
+
+def inventory_rows(d, name):
+    if d[:4] == b"LRTC":
+        header_size = lrtc_header_size(d, 0, len(d))
+        yield "0x0", "LRTC", header_size, 0, "", "header"
+        yield from stream_rows(d, header_size, len(d), 0)
+        return
+    if d[:4] != b"COTS":
+        raise ValueError("unknown SCW magic")
+
+    scene = dump_cots(d, name, scan_bytes=0)
+    if "error" in scene:
+        raise ValueError(scene["error"])
+    if not scene["offset_chain"]["contiguous"]:
+        raise ValueError("COTS TOC regions are not contiguous")
+    toc_offset = 0x10
+    llif = toc_offset + 4 + scene["toc_chunk_size"]
+    if d[llif:llif + 4] != b"LLIF":
+        raise ValueError("missing COTS LLIF")
+    llif_size = struct.unpack_from("<I", d, llif + 4)[0]
+    if llif + llif_size != int(scene["records"][0]["f3"], 16):
+        raise ValueError("COTS LLIF does not reach first TOC region")
+    yield "0x0", "COTS", toc_offset, 0, "", "header"
+    yield hex(toc_offset), "COTS", llif - toc_offset, 0, "0x0", "inner TOC including name pool"
+    yield hex(llif), "LLIF", llif_size, 1, "0x0", "before first TOC region"
+    for record in scene["records"]:
+        start, size = (int(record[key], 16) for key in ("f3", "f4"))
+        if not size:
+            continue
+        end = start + size
+        if size < 8 or end > len(d) or d[start:start + 4] != b"RVWS":
+            raise ValueError(f"invalid RVWS region at {start:#x}")
+        directory_size = struct.unpack_from("<I", d, start + 4)[0]
+        if not 8 <= directory_size <= size or directory_size % 4:
+            raise ValueError(f"invalid RVWS size at {start:#x}")
+        p = start + directory_size
+        yield hex(start), "RVWS", directory_size, record["i"], hex(toc_offset), "TOC region header"
+        if d[p:min(p + 4, end)] == b"LRTC":
+            header_size = lrtc_header_size(d, p, end)
+            yield hex(p), "LRTC", header_size, 0, hex(start), "embedded header"
+            yield from stream_rows(d, p + header_size, end, p)
+        else:
+            yield from stream_rows(d, p, end, start)
+
+
+CHUNK_FIELDS = ("path", "offset", "tag", "size", "index", "parent", "notes")
+CHUNK_TAGS = ("COTS", "LRTC", "RVWS", "COHS", "ONOS", "DDAP", "LLIF")
+SUMMARY_FIELDS = ("path", "container", *CHUNK_TAGS, "max_depth", "walked_to_eof",
+                  "leftover_bytes")
+
+
+def summary_row(data, name, rows):
+    counts = collections.Counter()
+    depths = {"": -1}
+    end = 0
+    for offset, tag, size, _, parent, _ in rows:
+        counts[tag] += 1
+        depths[offset] = depths[parent] + 1
+        end = max(end, int(offset, 16) + size)
+    return (name, data[:4].decode("ascii"), *(counts[tag] for tag in CHUNK_TAGS),
+            max(depths.values()), "yes" if end == len(data) else "no", len(data) - end)
+
+
+def write_chunk_csv(game_dir, output, *, summary=False):
+    files = sorted(path for path in (game_dir / "Data").rglob("*")
+                   if path.suffix.lower() == ".scw" and path.is_file())
+    if not files:
+        raise ValueError(f"no SCW files beneath {game_dir / 'Data'}")
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(SUMMARY_FIELDS if summary else CHUNK_FIELDS)
+    for path in files:
+        name = path.relative_to(game_dir).as_posix()
+        try:
+            with path.open("rb") as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as d:
+                rows = inventory_rows(d, name)
+                if summary:
+                    writer.writerow(summary_row(d, name, rows))
+                else:
+                    writer.writerows((name, *row) for row in rows)
+        except (ValueError, struct.error, OSError) as error:
+            raise ValueError(f"{name}: {error}") from error
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("scw")
-    ap.add_argument("--json", action="store_true")
+    ap.add_argument("scw", nargs="?")
+    output = ap.add_mutually_exclusive_group()
+    output.add_argument("--json", action="store_true")
+    output.add_argument("--chunks-csv", action="store_true",
+                        help="inventory all SCWs beneath the given game directory")
+    output.add_argument("--summary-csv", action="store_true",
+                        help="summarize chunk counts and coverage for each installed SCW")
     ap.add_argument("--scan-bytes", type=int, default=0x200000)
     a = ap.parse_args()
-    d = open(a.scw, "rb").read()
+    if a.chunks_csv or a.summary_csv:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from corpus import game_dir
+
+        root = Path(a.scw).expanduser() if a.scw else game_dir()
+        try:
+            write_chunk_csv(root, sys.stdout, summary=a.summary_csv)
+        except ValueError as error:
+            ap.exit(1, f"scwdump: {error}\n")
+        return
+    if a.scw is None:
+        ap.error("a scene file is required outside CSV mode")
+    d = Path(a.scw).read_bytes()
     magic = d[:4]
     if magic == b"COTS":
         res = dump_cots(d, a.scw, a.scan_bytes)
@@ -215,9 +361,10 @@ def main():
     else:
         print(f"  header size {res['header_size']}")
         for c in res["chunks"]:
+            payload = f" payload {c['payload_tag']}" if "payload_tag" in c else ""
             print(f"    chunk {c['tag']} @{c['offset']} size {c['size']:,}"
-                  + (f" (='{c['reversed']}')" if c.get("reversed") else ""))
-            for it in c.get("index", [])[:12]:
+                  f" (='{c['reversed']}'){payload}")
+            for it in c.get("index", []):
                 print(f"        idx {it['tag']} {it['v1']} @{it['off']}")
         if "stopped_at" in res:
             print(f"  walk stopped at {res['stopped_at']['offset']} tag "

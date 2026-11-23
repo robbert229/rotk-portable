@@ -12,6 +12,9 @@ help:
 	@echo "make toolchain  Fetch MSVC 7.0 and initialize dedicated Wine"
 	@echo "make hello  Build and verify the MSVC smoke test"
 	@echo "make doctor  Report MSVC and Wine diagnostics"
+	@echo "make corpus  Regenerate the committed retail corpus CSVs"
+	@echo "make corpus-check  Compare freshly generated corpus CSVs with HEAD"
+	@echo "make scw-chunks  Generate the detailed SCW inventory under out/corpus"
 
 test: lint
 	$(PYTHON) -m unittest discover -s tests -v
@@ -63,3 +66,71 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 .PHONY: validate-dump
 validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+
+CORPUS_DIR := re/corpus
+CORPUS_STEPS := corpus-manifest corpus-formats pecat assetindex filerefs libscan
+CORPUS_CSVS := manifest.csv formats.csv binaries.csv pe_sections.csv pe_imports.csv \
+	assets.csv assets_avi.csv assets_scw.csv filerefs.csv listed_files.csv libraries.csv \
+	scw_chunk_summary.csv samples.csv
+CORPUS_PYTHON = $(PYTHON) -BI
+export ROTK_GAME_DIR
+
+corpus-manifest = $(CORPUS_PYTHON) tools/corpus.py --install-only --output "$(1)/manifest.csv"
+corpus-formats = $(CORPUS_PYTHON) tools/corpus_formats.py --manifest "$(1)/manifest.csv" --output "$(1)/formats.csv"
+pecat = $(CORPUS_PYTHON) tools/pecat.py --output-dir "$(1)"
+assetindex = $(CORPUS_PYTHON) tools/assetindex.py --manifest "$(1)/manifest.csv" --out-dir "$(1)"
+filerefs = $(CORPUS_PYTHON) tools/filerefs.py --output-dir "$(1)"
+libscan = $(CORPUS_PYTHON) tools/libscan.py --output "$(1)/libraries.csv"
+scw-summary = $(CORPUS_PYTHON) tools/scwdump.py --summary-csv > "$(2)"
+corpus-samples = $(CORPUS_PYTHON) tools/samples.py refresh --corpus-manifest "$(1)/manifest.csv" > "$(2)"
+
+.PHONY: corpus corpus-check $(CORPUS_STEPS)
+corpus corpus-check:
+	@set -eu; scratch=$$(mktemp -d); trap 'rm -rf "$$scratch"' EXIT; \
+	$(foreach step,$(CORPUS_STEPS),$(call $(step),$$scratch);) \
+	$(call scw-summary,$$scratch,$$scratch/scw_chunk_summary.csv); \
+	$(call corpus-samples,$$scratch,$$scratch/samples.csv); \
+	if [ "$@" = corpus ]; then \
+		for csv in $(CORPUS_CSVS); do \
+			mv "$$scratch/$$csv" "$(CORPUS_DIR)/$$csv"; \
+		done; \
+	else \
+		status=0; \
+		for csv in $(CORPUS_CSVS); do \
+			git show "HEAD:$(CORPUS_DIR)/$$csv" > "$$scratch/committed"; \
+			diff -u --label "HEAD:$(CORPUS_DIR)/$$csv" --label "generated/$$csv" \
+				"$$scratch/committed" "$$scratch/$$csv" || status=1; \
+		done; \
+		[ "$$status" -eq 0 ]; \
+		echo "Corpus CSVs match HEAD."; \
+	fi
+
+$(CORPUS_STEPS):
+	$(call $@,$(CORPUS_DIR))
+
+.PHONY: scw-summary corpus-samples
+scw-summary:
+	@set -eu; tmp=$$(mktemp); trap 'rm -f "$$tmp"' EXIT; \
+	$(call scw-summary,$(CORPUS_DIR),$$tmp); \
+	mv "$$tmp" "$(CORPUS_DIR)/scw_chunk_summary.csv"
+
+corpus-samples:
+	@set -eu; tmp=$$(mktemp); trap 'rm -f "$$tmp"' EXIT; \
+	$(call corpus-samples,$(CORPUS_DIR),$$tmp); \
+	mv "$$tmp" "$(CORPUS_DIR)/samples.csv"
+
+.PHONY: scw-chunks corpus-verify refs samples
+scw-chunks:
+	@set -eu; tmp=$$(mktemp); trap 'rm -f "$$tmp"' EXIT; \
+	$(CORPUS_PYTHON) tools/scwdump.py --chunks-csv > "$$tmp"; \
+	mkdir -p out/corpus; \
+	mv "$$tmp" out/corpus/scw_chunks.csv
+
+corpus-verify:
+	@ROTK_ISO_DIR="$(ROTK_ISO_DIR)" $(CORPUS_PYTHON) tools/corpus.py --verify
+
+refs:
+	$(CORPUS_PYTHON) tools/refs.py fetch
+
+samples:
+	$(CORPUS_PYTHON) tools/samples.py fetch
