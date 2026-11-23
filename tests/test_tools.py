@@ -1,5 +1,6 @@
 """Run the tool CLIs and compare their output with reviewed SHA-256 baselines."""
 
+from collections import Counter
 import csv
 import hashlib
 import io
@@ -15,6 +16,8 @@ import zlib
 
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "tools"))
+from corpus import game_dir
 EXPECTED = Path(__file__).with_name("expected.json")
 SAMPLES = Path(os.environ.get("ROTK_SAMPLES_DIR", REPO / "assets/samples")).resolve()
 
@@ -132,28 +135,39 @@ class ScwWalkTest(unittest.TestCase):
                 self.assertEqual(scene["stopped_at"]["offset"], "0x2c")
 
     def test_retail_chunk_inventory(self):
-        game = Path(os.environ.get("ROTK_GAME_DIR") or Path.home() / (
-            "Games/lord-of-the-rings-the-return-of-the-king/drive_c/"
-            "Program Files (x86)/EA GAMES/LOTR The Return of the King tm"
-        ))
+        game = game_dir()
         if not game.is_dir():
             self.skipTest("retail game directory unavailable")
-        result = subprocess.run(
-            [sys.executable, "-I", str(REPO / "tools/scwdump.py"), str(game), "--chunks-csv"],
-            check=True, capture_output=True, timeout=30,
-        )
-        self.assertEqual(result.stdout, (REPO / "re/corpus/scw_chunks.csv").read_bytes())
-        with (REPO / "re/corpus/assets_scw.csv").open(newline="") as source:
-            lrtc = {row["path"]: int(row["size"]) for row in csv.DictReader(source)
-                    if row["container"] == "LRTC"}
-        self.assertEqual(len(lrtc), 26)
-        cursors = dict.fromkeys(lrtc, 0)
+        command = [sys.executable, "-BI", str(REPO / "tools/scwdump.py"), str(game)]
+        summary = REPO / "re/corpus/scw_chunk_summary.csv"
+        result = subprocess.run(command + ["--summary-csv"], check=True,
+                                capture_output=True, timeout=30)
+        self.assertEqual(result.stdout, summary.read_bytes())
+        with summary.open(newline="") as source:
+            summaries = {row["path"]: row for row in csv.DictReader(source)}
+
+        result = subprocess.run(command + ["--chunks-csv"], check=True,
+                                capture_output=True, timeout=30)
+        counts = Counter()
+        depths = {}
+        cursors = dict.fromkeys(summaries, 0)
         for row in csv.DictReader(io.StringIO(result.stdout.decode("utf-8"))):
             path = row["path"]
-            if path in lrtc:
-                self.assertEqual(int(row["offset"], 16), cursors[path], path)
-                cursors[path] += int(row["size"])
-        self.assertEqual(cursors, lrtc)
+            self.assertEqual(int(row["offset"], 16), cursors[path], path)
+            cursors[path] += int(row["size"])
+            counts[path, row["tag"]] += 1
+            depths[path, row["offset"]] = depths[path, row["parent"]] + 1 if row["parent"] else 0
+
+        tags = ("COTS", "LRTC", "RVWS", "COHS", "ONOS", "DDAP", "LLIF")
+        for path, row in summaries.items():
+            with self.subTest(path=path):
+                for tag in tags:
+                    self.assertEqual(counts[path, tag], int(row[tag]), tag)
+                leftover = (game / path).stat().st_size - cursors[path]
+                self.assertEqual(leftover, int(row["leftover_bytes"]))
+                self.assertEqual(row["walked_to_eof"], "yes" if not leftover else "no")
+                self.assertEqual(int(row["max_depth"]),
+                                 max(depth for (name, _), depth in depths.items() if name == path))
 
 
 def update_expected():

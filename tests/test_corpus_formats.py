@@ -1,7 +1,6 @@
 import csv
 import hashlib
 import io
-import os
 from pathlib import Path
 import struct
 import subprocess
@@ -73,7 +72,7 @@ class FormatDetectionTest(unittest.TestCase):
 
 class LocalFormatCorpusTest(unittest.TestCase):
     def test_install_regenerates_committed_csv(self):
-        game = Path(os.environ.get("ROTK_GAME_DIR") or corpus_formats.DEFAULT_GAME_DIR)
+        game = corpus_formats.game_dir()
         if not game.is_dir():
             self.skipTest("retail game directory is absent")
         result = subprocess.run(

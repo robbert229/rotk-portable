@@ -22,3 +22,10 @@ git diff -- tests/expected.json
 ```
 
 Commit only the reviewed hashes. Keep samples and generated outputs local.
+
+The corpus consistency tests cross-check the committed install identities and
+coverage without retail files. With the retail install available, the SCW
+regression compares the per-file summary byte for byte and cross-checks it
+against the detailed walk. Run `make corpus-check` to verify all generated
+corpus CSVs against Git `HEAD`, or `make scw-chunks` to keep a local copy
+of the detailed walk in `out/corpus/`.

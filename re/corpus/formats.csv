@@ -1,7 +1,7 @@
 path,sha256,size,ext,detected_format,magic_hex,spec,tool,parse_status,parse_note
 00000000.016,0e7aeec52d596772b83f977bd7e85ab1ac392244e5219abb059d9a3a0d0ea412,307324,.016,BMP,424d7cb004000000,docs/formats/misc.md,,n/a,no repository parser
 00000000.256,c2c18e3905a9aba706a11574a0eb8ddbab9e9fcf99c6a1068c8c3c61c82f1784,308278,.256,BMP,424d36b404000000,docs/formats/misc.md,,n/a,no repository parser
-Data/Game/GlobScen.scw,d54d7f47a74e604264a4a492f219916389a725bb04f8635b92dc7d7f5519dbe2,5505024,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Game/GlobScen.scw,d54d7f47a74e604264a4a492f219916389a725bb04f8635b92dc7d7f5519dbe2,5505024,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x540000
 Data/Game/bla/bla01.scw,5b9998f0a6b5908091237d1ad71da6ac69e26a81b2c2028058ac5adb7e42badc,82247680,.scw,SCW COTS,434f5453a0010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
 Data/Game/cir/cir00.scw,b24bbd81f107166e3a408143713f454766587ca926de973ac6255d68ec697a9e,105316352,.scw,SCW COTS,434f5453fc020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
 Data/Game/cir/cir01.scw,2ea9b2483f9697497b3f2275275fddc695457289b6e41cbb65d1204dfd10a018,28311552,.scw,SCW COTS,434f545318010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
@@ -22,7 +22,7 @@ Data/Game/pat/pat02.scw,4b2b50dfacca971b137342e18df4169c0fe3f6c1a7a467040a2b8d59
 Data/Game/pat/pat03.scw,d83ff91f05868c8f86d04508be2806995e3a3ac3ae9da39bfb10c6d2ba9d2896,47972352,.scw,SCW COTS,434f545300020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
 Data/Game/pel/pel02.scw,19bbebda7ce00645202b08d6ae061659851ed44b49f1a5a8872857770e225bcd,64749568,.scw,SCW COTS,434f5453a0010000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
 Data/Game/she/she01.scw,8f1706777ecd834c8ebcb23f02295820c98037adfc65385e11cc7d42d2e4a653,116981760,.scw,SCW COTS,434f545360020000,docs/formats/scw.md,tools/scwdump.py,ok,scene TOC parsed
-Data/LoadOnce.scw,dceda728cb300531f236807d885e104db9299c604be6a8c343956568fc7b39b2,65536,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/LoadOnce.scw,dceda728cb300531f236807d885e104db9299c604be6a8c343956568fc7b39b2,65536,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x10000
 Data/Movies/attrfmv1.avi,5e814bd1518118d0854e82fc815389b50f6acdda3a6a6fb421e90fa5dfb93127,46788608,.avi,RIFF/AVI,5249464648eec902,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Movies/crakfmv1.avi,2bd441c0822618534c9d5468b4d0cdec43aaaeed27fcc861531fa91fa4fdd757,6948864,.avi,RIFF/AVI,52494646c8006a00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Movies/endfmv1.avi,5c0a339d78072a904416cd2ed1b21840bea71cfb455b0094d04b1c60dea04118,15968256,.avi,RIFF/AVI,524946465ea4f300,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
@@ -44,30 +44,30 @@ Data/Movies/pat2fmv1.avi,3aaea0dd72c9921c9ff69c9a58fa67d4e01c7de28b035151ad7da4b
 Data/Movies/pelefmv1.avi,514a83bcdc81b95342b6f75fb734bd7b40927be1dc7f195ef0c19860aeb25763,28907520,.avi,RIFF/AVI,524946461410b901,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Movies/rtsvid.avi,c5abac0a2b44d2af9e76016e4e18405cb62c6a27c840295b6760d13e9609d5b2,35149824,.avi,RIFF/AVI,524946465c561802,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Movies/shelfmv1.avi,7c95cc75f7d4760abf501c8e8e55ed1b4113699af0a399093f2844e8bc2f465e,8015872,.avi,RIFF/AVI,52494646a04c7a00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
-Data/Player/Char_ArC.scw,95b1d49a6904e929a371009f48b87e99c0e9b324bff27132428ba9fe1ef7722d,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Ara.scw,03d0b9018dea2ab4480f81302ca03ca9dfa0de6c5f25ede124c4e8fed57a46ab,1572864,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Far.scw,196038d76470bcaa8490a8e0682fbb31452d1e167a600e37ff552720d7746e2d,1376256,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_FrD.scw,8a76ff4a54a9e1dbaca356910083964ba24ccc090ebddd790f1157d6938ba46e,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Fro.scw,ecb18902759b7a862147ef95bfb29733cca377a0eee15731186734a33de33b5c,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Gan.scw,d100d653d90d3b79d4abe416a3e9816dceb8936d77fb726ddeb1bad444f3db78,1638400,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Gim.scw,4e3fcb9b7306a69bf04d263216bc583fd950d75bf4555b26128514140aed0450,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Leg.scw,f88a9d935e52ba7bca48b9cc69e1cd93b77899fd955e87e369bafb596e7280ec,917504,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Mer.scw,1c3bc19a3c366da577ac92d24204e48f93494c56b1b66f0422fda2b73ea2f2b8,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Pip.scw,ca82663b967bf04c7b0a3ec5fa88a52079ddb7c8c3f00a462f2b89cd9fc5638e,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_SaC.scw,1695e48acd3be718a0ecccc679936a6737ef4fc45cd06edbbb1b4af0b4fb743e,1310720,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Char_Sam.scw,2ace812da0fc1732983d233b5962039f1829805805254e9cee75d216f02af10b,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_ArC.scw,593919e064fbf38f60118dc10a023975be98b7cad74da54dd7a09c554db3cfb6,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Ara.scw,32764c285f82c431eb5641fa198f850dd4608df04bbd5fb181064d542292d626,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Far.scw,f123bc3e7831852b13fafd396f31e460beac387402da7e1a6e64d1904adb2065,851968,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_FrD.scw,369300ff410f2274adab48e2a74918640f0dda2c7691b546e868fddcbdf8c25a,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Fro.scw,a59731b500fe11c361a4966532e338a1390dfb00b1986aecabd68f501ee312ca,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Gan.scw,3526c9d507077acbbd8e0c6fa918373f37f49d09c412411d8ce26d3a5134b5a7,720896,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Gim.scw,b52f28c10e3131f4b73facb4adeec977f3541c20ce2173b22d76bc8f30640373,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Leg.scw,d25227dcfeecb205fcc0fa46afd489ff2e15b9f49c46dcf4f276174fa784a11e,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Mer.scw,f07c7437146e8013b5a179d26feaeece18ca2c6cb28ec5667d44a227f4c9964e,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Pip.scw,29eae54b7c96d60b85de8fa590e0d752c7d2c4114c9626ec7b47e4524605ffe9,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_SaC.scw,432e78d6cfded26167b316e3c907902328243b03d1dde5315f028ea6ef3ba4b0,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
-Data/Player/Foll_Sam.scw,ecb1c6ed9136238570829e4aff51baaef673a861263022122c812439ad8270f4,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60
+Data/Player/Char_ArC.scw,95b1d49a6904e929a371009f48b87e99c0e9b324bff27132428ba9fe1ef7722d,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x170000
+Data/Player/Char_Ara.scw,03d0b9018dea2ab4480f81302ca03ca9dfa0de6c5f25ede124c4e8fed57a46ab,1572864,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x180000
+Data/Player/Char_Far.scw,196038d76470bcaa8490a8e0682fbb31452d1e167a600e37ff552720d7746e2d,1376256,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x150000
+Data/Player/Char_FrD.scw,8a76ff4a54a9e1dbaca356910083964ba24ccc090ebddd790f1157d6938ba46e,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x160000
+Data/Player/Char_Fro.scw,ecb18902759b7a862147ef95bfb29733cca377a0eee15731186734a33de33b5c,1507328,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x170000
+Data/Player/Char_Gan.scw,d100d653d90d3b79d4abe416a3e9816dceb8936d77fb726ddeb1bad444f3db78,1638400,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x190000
+Data/Player/Char_Gim.scw,4e3fcb9b7306a69bf04d263216bc583fd950d75bf4555b26128514140aed0450,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x130000
+Data/Player/Char_Leg.scw,f88a9d935e52ba7bca48b9cc69e1cd93b77899fd955e87e369bafb596e7280ec,917504,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0xe0000
+Data/Player/Char_Mer.scw,1c3bc19a3c366da577ac92d24204e48f93494c56b1b66f0422fda2b73ea2f2b8,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x130000
+Data/Player/Char_Pip.scw,ca82663b967bf04c7b0a3ec5fa88a52079ddb7c8c3f00a462f2b89cd9fc5638e,1245184,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x130000
+Data/Player/Char_SaC.scw,1695e48acd3be718a0ecccc679936a6737ef4fc45cd06edbbb1b4af0b4fb743e,1310720,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x140000
+Data/Player/Char_Sam.scw,2ace812da0fc1732983d233b5962039f1829805805254e9cee75d216f02af10b,1441792,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x160000
+Data/Player/Foll_ArC.scw,593919e064fbf38f60118dc10a023975be98b7cad74da54dd7a09c554db3cfb6,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x90000
+Data/Player/Foll_Ara.scw,32764c285f82c431eb5641fa198f850dd4608df04bbd5fb181064d542292d626,589824,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x90000
+Data/Player/Foll_Far.scw,f123bc3e7831852b13fafd396f31e460beac387402da7e1a6e64d1904adb2065,851968,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0xd0000
+Data/Player/Foll_FrD.scw,369300ff410f2274adab48e2a74918640f0dda2c7691b546e868fddcbdf8c25a,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x70000
+Data/Player/Foll_Fro.scw,a59731b500fe11c361a4966532e338a1390dfb00b1986aecabd68f501ee312ca,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x80000
+Data/Player/Foll_Gan.scw,3526c9d507077acbbd8e0c6fa918373f37f49d09c412411d8ce26d3a5134b5a7,720896,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0xb0000
+Data/Player/Foll_Gim.scw,b52f28c10e3131f4b73facb4adeec977f3541c20ce2173b22d76bc8f30640373,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60000
+Data/Player/Foll_Leg.scw,d25227dcfeecb205fcc0fa46afd489ff2e15b9f49c46dcf4f276174fa784a11e,393216,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x60000
+Data/Player/Foll_Mer.scw,f07c7437146e8013b5a179d26feaeece18ca2c6cb28ec5667d44a227f4c9964e,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x80000
+Data/Player/Foll_Pip.scw,29eae54b7c96d60b85de8fa590e0d752c7d2c4114c9626ec7b47e4524605ffe9,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x70000
+Data/Player/Foll_SaC.scw,432e78d6cfded26167b316e3c907902328243b03d1dde5315f028ea6ef3ba4b0,458752,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x70000
+Data/Player/Foll_Sam.scw,ecb1c6ed9136238570829e4aff51baaef673a861263022122c812439ad8270f4,524288,.scw,SCW LRTC,4c52544318000000,docs/formats/scw.md,tools/scwdump.py,ok,chunk walk reached 0x80000
 Data/Special/faraspc1.avi,38df811447c4d5132ba645a25d0e466034cf881cfc3695f39e20c49e3e5a0c05,5685248,.avi,RIFF/AVI,52494646a4bf5600,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Special/faraspc2.avi,cf2b4ac9ba928a8c2b342d2875c199c1606f1d06e5842f1f4d60cea33bb722a7,11345920,.avi,RIFF/AVI,524946462619ad00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser
 Data/Special/frodspc1.avi,da4cf7c4f2f67f6b74ca413fc7ed16c617553c01cc5910edbce90d86dd5f23ee,11501568,.avi,RIFF/AVI,524946469c7caf00,docs/analysis/fmv-pipeline.md,,n/a,no repository parser

@@ -17,7 +17,7 @@ from xml.etree import ElementTree
 
 # Also support direct execution with python3 -I.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from corpus import DEFAULT_GAME_DIR, MANIFEST
+from corpus import MANIFEST, game_dir, game_prefix
 from geo2obj import parse_geo
 from scwdump import dump_cots, dump_lrtc
 from txw2png import parse_txw
@@ -273,7 +273,7 @@ def is_pe(data):
     if len(data) < 64 or data[:2] != b"MZ":
         return False
     offset = struct.unpack_from("<I", data, 0x3C)[0]
-    return data[offset:offset + 4] == b"PE\0\0"
+    return offset >= 64 and data[offset:offset + 4] == b"PE\0\0"
 
 
 def manifest_assets(root, manifest):
@@ -319,9 +319,9 @@ def write_csv(path, fields, rows):
 
 
 def write_index(root, manifest, destination):
-    root = root.resolve()
+    root = root.expanduser().resolve()
     destination = destination.resolve()
-    prefix = next((parent.parent for parent in root.parents if parent.name == "drive_c"), root)
+    prefix = game_prefix(root)
     if not root.is_dir():
         raise ValueError(f"game directory does not exist: {root}")
     if destination == prefix or prefix in destination.parents:
@@ -355,8 +355,7 @@ def write_index(root, manifest, destination):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--game-dir", type=Path, default=os.environ.get("ROTK_GAME_DIR")
-                        or DEFAULT_GAME_DIR)
+    parser.add_argument("--game-dir", type=Path, default=game_dir())
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--out-dir", type=Path, default=MANIFEST.parent)
     args = parser.parse_args()

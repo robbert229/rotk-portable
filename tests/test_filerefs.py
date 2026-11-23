@@ -2,7 +2,6 @@
 
 import csv
 from hashlib import sha256
-import os
 from pathlib import Path
 import struct
 import subprocess
@@ -121,7 +120,7 @@ class FileRefsTest(unittest.TestCase):
                              ["helper.dll", "unpacked.exe"])
 
     def test_retail_regeneration(self):
-        game = Path(os.environ.get("ROTK_GAME_DIR") or filerefs.DEFAULT_GAME_DIR)
+        game = filerefs.game_dir()
         if not (game / "ROTK.exe").is_file():
             self.skipTest("retail game directory is absent")
         with tempfile.TemporaryDirectory() as scratch:

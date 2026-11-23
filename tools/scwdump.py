@@ -8,7 +8,7 @@ a header followed by a stream of size-prefixed chunks.
 
 Usage:
     python3 tools/scwdump.py FILE.scw [--json] [--scan-bytes N]
-    python3 tools/scwdump.py GAME_DIR --chunks-csv
+    python3 tools/scwdump.py [GAME_DIR] --chunks-csv | --summary-csv
 """
 import argparse
 import collections
@@ -266,36 +266,67 @@ def inventory_rows(d, name):
             yield from stream_rows(d, p, end, start)
 
 
-def write_chunk_csv(game_dir, output):
-    files = sorted((game_dir / "Data").rglob("*.scw"))
+CHUNK_FIELDS = ("path", "offset", "tag", "size", "index", "parent", "notes")
+CHUNK_TAGS = ("COTS", "LRTC", "RVWS", "COHS", "ONOS", "DDAP", "LLIF")
+SUMMARY_FIELDS = ("path", "container", *CHUNK_TAGS, "max_depth", "walked_to_eof",
+                  "leftover_bytes")
+
+
+def summary_row(data, name, rows):
+    counts = collections.Counter()
+    depths = {"": -1}
+    end = 0
+    for offset, tag, size, _, parent, _ in rows:
+        counts[tag] += 1
+        depths[offset] = depths[parent] + 1
+        end = max(end, int(offset, 16) + size)
+    return (name, data[:4].decode("ascii"), *(counts[tag] for tag in CHUNK_TAGS),
+            max(depths.values()), "yes" if end == len(data) else "no", len(data) - end)
+
+
+def write_chunk_csv(game_dir, output, *, summary=False):
+    files = sorted(path for path in (game_dir / "Data").rglob("*")
+                   if path.suffix.lower() == ".scw" and path.is_file())
     if not files:
         raise ValueError(f"no SCW files beneath {game_dir / 'Data'}")
     writer = csv.writer(output, lineterminator="\n")
-    writer.writerow(("path", "offset", "tag", "size", "index", "parent", "notes"))
+    writer.writerow(SUMMARY_FIELDS if summary else CHUNK_FIELDS)
     for path in files:
         name = path.relative_to(game_dir).as_posix()
         try:
             with path.open("rb") as file, mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as d:
-                writer.writerows((name, *row) for row in inventory_rows(d, name))
+                rows = inventory_rows(d, name)
+                if summary:
+                    writer.writerow(summary_row(d, name, rows))
+                else:
+                    writer.writerows((name, *row) for row in rows)
         except (ValueError, struct.error, OSError) as error:
             raise ValueError(f"{name}: {error}") from error
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("scw")
+    ap.add_argument("scw", nargs="?")
     output = ap.add_mutually_exclusive_group()
     output.add_argument("--json", action="store_true")
     output.add_argument("--chunks-csv", action="store_true",
                         help="inventory all SCWs beneath the given game directory")
+    output.add_argument("--summary-csv", action="store_true",
+                        help="summarize chunk counts and coverage for each installed SCW")
     ap.add_argument("--scan-bytes", type=int, default=0x200000)
     a = ap.parse_args()
-    if a.chunks_csv:
+    if a.chunks_csv or a.summary_csv:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from corpus import game_dir
+
+        root = Path(a.scw).expanduser() if a.scw else game_dir()
         try:
-            write_chunk_csv(Path(a.scw), sys.stdout)
+            write_chunk_csv(root, sys.stdout, summary=a.summary_csv)
         except ValueError as error:
             ap.exit(1, f"scwdump: {error}\n")
         return
+    if a.scw is None:
+        ap.error("a scene file is required outside CSV mode")
     d = Path(a.scw).read_bytes()
     magic = d[:4]
     if magic == b"COTS":

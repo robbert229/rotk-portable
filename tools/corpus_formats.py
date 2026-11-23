@@ -6,7 +6,6 @@ import codecs
 import csv
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -16,7 +15,7 @@ import tempfile
 # Isolated script execution does not add the script directory to sys.path.
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
-from corpus import CHUNK_SIZE, DEFAULT_GAME_DIR, MANIFEST
+from corpus import CHUNK_SIZE, MANIFEST, game_dir, game_prefix
 
 OUTPUT = MANIFEST.with_name("formats.csv")
 FIELDS = ("path", "sha256", "size", "ext", "detected_format", "magic_hex",
@@ -110,7 +109,7 @@ def probe(path, detected):
     tool = f"tools/{script}"
     try:
         result = subprocess.run(
-            [sys.executable, "-I", str(TOOLS / script), *options, str(path)],
+            [sys.executable, "-BI", str(TOOLS / script), *options, str(path)],
             capture_output=True, timeout=PARSE_TIMEOUT, check=False,
         )
     except subprocess.TimeoutExpired:
@@ -147,7 +146,7 @@ def probe(path, detected):
                 return tool, "fail", f"no chunks parsed at {covered}"
             note = f"chunk walk reached {covered}"
             if "stopped_at" in report:
-                note += " (next size exceeds EOF)"
+                note += f" ({report['stopped_at']['note']})"
     if result.stderr:
         note += " (parser emitted a warning)"
     return tool, "ok", note
@@ -189,18 +188,20 @@ def audit(root, manifest):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--game-dir", type=Path,
-                        default=os.environ.get("ROTK_GAME_DIR") or DEFAULT_GAME_DIR)
+                        default=game_dir())
     parser.add_argument("--stdout", action="store_true", help="write CSV to stdout")
+    parser.add_argument("--manifest", type=Path, default=MANIFEST)
+    parser.add_argument("--output", type=Path, default=OUTPUT)
     args = parser.parse_args()
     try:
-        root = args.game_dir.resolve()
+        root = args.game_dir.expanduser().resolve()
         if not root.is_dir():
             raise ValueError(f"game directory does not exist: {root}")
-        prefix = next((path.parent for path in root.parents if path.name == "drive_c"), root)
-        destination = OUTPUT.parent.resolve() / OUTPUT.name
+        prefix = game_prefix(root)
+        destination = args.output.parent.resolve() / args.output.name
         if not args.stdout and prefix in destination.parents:
             raise ValueError("CSV destination is inside the game prefix")
-        rows = list(audit(root, MANIFEST))
+        rows = list(audit(root, args.manifest))
         if args.stdout:
             write_csv(sys.stdout, rows)
         else:

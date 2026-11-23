@@ -11,11 +11,10 @@ import sys
 import tempfile
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from corpus import MANIFEST, game_dir, game_prefix
+
 REPO = Path(__file__).resolve().parents[1]
-DEFAULT_GAME_DIR = Path.home() / (
-    "Games/lord-of-the-rings-the-return-of-the-king/drive_c/Program Files (x86)/"
-    "EA GAMES/LOTR The Return of the King tm"
-)
 FIELDS = (
     "sample_id", "source_origin", "source_path", "sha256", "size",
     "format", "variant", "why_selected", "used_by_tests",
@@ -160,10 +159,12 @@ def run(args):
     roots = {}
     if args.command == "fetch":
         roots = {
-            "install": args.game_dir.resolve(),
+            "install": args.game_dir.expanduser().resolve(),
             "pac": args.pac_dir.resolve() if args.pac_dir is not None else None,
         }
-    protected = [path for path in roots.values() if path is not None]
+    protected = [game_prefix(roots["install"])] if roots else []
+    if roots.get("pac") is not None:
+        protected.append(roots["pac"])
     if any(within(root, path) for path in protected):
         raise ValueError(f"samples directory is inside a source directory: {root}")
 
@@ -192,17 +193,44 @@ def run(args):
     return 0
 
 
+def refresh(selection, corpus, output):
+    """Keep the curated sample choices and refresh their manifest identity."""
+    with corpus.open(encoding="utf-8", newline="") as stream:
+        manifest = {(row["origin"], row["path"]): row for row in csv.DictReader(stream)}
+    with selection.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    for row in rows:
+        origin, path = row["source_origin"], row["source_path"]
+        if origin == "pac":
+            matches = [entry for (source, name), entry in manifest.items()
+                       if source.startswith("pac:") and name == path]
+            entry = matches[0] if len(matches) == 1 else None
+        else:
+            entry = manifest.get((origin, path))
+        if entry is None:
+            raise ValueError(f"{origin}:{path} has no unique corpus manifest entry")
+        row.update(sha256=entry["sha256"], size=entry["size"])
+    writer = csv.DictWriter(output, FIELDS, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("fetch", "check"))
+    parser.add_argument("command", choices=("fetch", "check", "refresh"))
     parser.add_argument("--manifest", type=Path, default=REPO / "re/corpus/samples.csv")
+    parser.add_argument("--corpus-manifest", type=Path, default=MANIFEST,
+                        help="source of sizes and hashes for refresh")
     parser.add_argument("--game-dir", type=Path,
-                        default=os.environ.get("ROTK_GAME_DIR", DEFAULT_GAME_DIR))
+                        default=game_dir())
     parser.add_argument("--pac-dir", type=Path, help="tree of pre-extracted PAC members")
     parser.add_argument("--samples-dir", type=Path,
                         default=os.environ.get("ROTK_SAMPLES_DIR", REPO / "assets/samples"))
     args = parser.parse_args(argv)
     try:
+        if args.command == "refresh":
+            refresh(args.manifest, args.corpus_manifest, sys.stdout)
+            return 0
         return run(args)
     except (OSError, ValueError, RuntimeError, csv.Error) as error:
         print(f"samples: {error}", file=sys.stderr)

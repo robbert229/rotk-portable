@@ -11,11 +11,13 @@ import sys
 
 if __package__:
     from . import richhdr
+    from .corpus import game_dir, game_prefix
     from .validate_dump import PE
 else:
     # Isolated Python does not put the script directory on sys.path.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import richhdr
+    from corpus import game_dir, game_prefix
     from validate_dump import PE
 
 
@@ -217,11 +219,11 @@ def scan(data):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("game_dir", type=Path, help="installed game directory")
+    parser.add_argument("game_dir", type=Path, nargs="?", default=game_dir(), help="installed game directory")
     parser.add_argument("--output", type=Path, help="write CSV here instead of stdout")
     args = parser.parse_args()
     try:
-        root = args.game_dir.resolve(strict=True)
+        root = args.game_dir.expanduser().resolve(strict=True)
         files = sorted(path for path in root.rglob("*") if path.is_file()
                        and path.suffix.lower() in {".exe", ".dll", ".sys"})
         if not files:
@@ -239,7 +241,7 @@ def main():
             write_csv(sys.stdout, rows)
         else:
             output = args.output.resolve()
-            if output.is_relative_to(root):
+            if output.is_relative_to(game_prefix(root)):
                 raise ValueError("CSV destination must be outside the game directory")
             with output.open("w", encoding="utf-8", newline="") as stream:
                 write_csv(stream, rows)

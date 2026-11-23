@@ -25,6 +25,14 @@ CHUNK_SIZE = 1 << 20
 MANIFEST_COLUMNS = ("origin", "path", "size", "sha256")
 
 
+def game_dir():
+    return Path(os.environ.get("ROTK_GAME_DIR") or DEFAULT_GAME_DIR).expanduser()
+
+
+def game_prefix(root):
+    return next((path.parent for path in root.parents if path.name == "drive_c"), root)
+
+
 def hash_file(path):
     digest = hashlib.sha256()
     size = 0
@@ -150,6 +158,9 @@ def main():
         "--pac", nargs="+", type=Path, metavar="PAC",
         help="ordered retail PAC files, overriding ROTK_ISO_DIR",
     )
+    parser.add_argument("--game-dir", type=Path, default=game_dir())
+    parser.add_argument("--output", type=Path, default=MANIFEST)
+    parser.add_argument("--install-only", action="store_true", help="ignore retail PAC inputs")
     parser.add_argument("--verify", action="store_true", help="compare PAC members with installed Data files")
     parser.add_argument("--disc-tree", nargs="+", type=Path, default=[], metavar="ROOT",
                         help="disc filesystem roots in disc order")
@@ -158,13 +169,15 @@ def main():
     parser.add_argument("--disc-label", nargs="+", default=[], metavar="LABEL",
                         help="volume labels in disc order, or empty strings to detect from ISO images")
     args = parser.parse_args()
+    if args.install_only and (args.pac or args.verify):
+        parser.error("--install-only cannot be combined with --pac or --verify")
     inventory = bool(args.disc_tree or args.disc_image)
     if args.disc_label and len(args.disc_label) != max(len(args.disc_tree), len(args.disc_image)):
         parser.error("--disc-label requires one label per disc")
     if inventory and args.pac and not args.verify:
         parser.error("--pac with disc inventory requires --verify")
-    root = Path(os.environ.get("ROTK_GAME_DIR") or DEFAULT_GAME_DIR).resolve()
-    destination = MANIFEST.parent.resolve() / MANIFEST.name
+    root = args.game_dir.expanduser().resolve()
+    destination = args.output.parent.resolve() / args.output.name
     try:
         if inventory:
             rows = list(disc_rows(args.disc_tree, args.disc_image, args.disc_label))
@@ -176,7 +189,7 @@ def main():
         if not root.is_dir():
             raise ValueError(f"game directory does not exist: {root}")
         paths = args.pac
-        if paths is None and os.environ.get("ROTK_ISO_DIR"):
+        if paths is None and not args.install_only and os.environ.get("ROTK_ISO_DIR"):
             paths = find_packs(Path(os.environ["ROTK_ISO_DIR"]))
         if paths and tuple(path.name.lower() for path in paths) != PACK_NAMES[:len(paths)]:
             raise ValueError("pass PACs in order starting with data_1.pac")
@@ -187,7 +200,7 @@ def main():
             return verify(tree_rows(root, "install"), pac_rows(paths),
                           sys.stderr if inventory else sys.stdout)
 
-        prefix = next((path.parent for path in root.parents if path.name == "drive_c"), root)
+        prefix = game_prefix(root)
         if destination.is_relative_to(prefix):
             raise ValueError("manifest destination is inside the game prefix")
         rows = list(tree_rows(root, "install"))

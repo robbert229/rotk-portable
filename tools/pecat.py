@@ -16,13 +16,13 @@ from uuid import UUID
 
 if __package__:
     from . import richhdr
-    from .corpus import DEFAULT_GAME_DIR
+    from .corpus import game_dir, game_prefix
     from .validate_dump import PE, require
 else:
     # Python isolated mode omits the script directory.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import richhdr
-    from corpus import DEFAULT_GAME_DIR
+    from corpus import game_dir, game_prefix
     from validate_dump import PE, require
 
 
@@ -346,7 +346,7 @@ def pe_files(root):
 
 
 def write_catalogue(root, destination):
-    prefix = next((path.parent for path in root.parents if path.name == "drive_c"), root)
+    prefix = game_prefix(root)
     require(not destination.is_relative_to(prefix), "catalogue destination is inside the game prefix")
     require(root.is_dir(), f"game directory does not exist: {root}")
     binaries, sections, import_rows = [], [], []
@@ -378,8 +378,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR,
                         help="directory for the three CSVs")
+    parser.add_argument("--game-dir", type=Path, default=game_dir())
     args = parser.parse_args()
-    root = Path(os.environ.get("ROTK_GAME_DIR") or DEFAULT_GAME_DIR).resolve()
+    root = args.game_dir.expanduser().resolve()
     try:
         write_catalogue(root, args.output_dir.resolve())
     except (OSError, ValueError) as error:

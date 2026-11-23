@@ -13,13 +13,10 @@ import tempfile
 
 # Match tools/srcpaths.py's section attribution under isolated execution.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from corpus import game_dir, game_prefix
 from srcpaths import location, pe_locations
 
 
-DEFAULT_GAME_DIR = Path.home() / (
-    "Games/lord-of-the-rings-the-return-of-the-king/drive_c/"
-    "Program Files (x86)/EA GAMES/LOTR The Return of the King tm"
-)
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "re/corpus"
 LISTINGS = {"filelist.txt", "common_filelist.txt", "manifest.txt", "input.ini"}
 EXTENSIONS = set(
@@ -260,16 +257,16 @@ def inventory(root, exe):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--game-dir", type=Path, default=os.environ.get("ROTK_GAME_DIR")
-                        or DEFAULT_GAME_DIR)
+    parser.add_argument("--game-dir", type=Path, default=game_dir())
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--exe", type=Path, help="scan this PE in place of installed ROTK.exe")
     args = parser.parse_args()
     try:
-        root = args.game_dir.resolve()
+        root = args.game_dir.expanduser().resolve()
         output = args.output_dir.resolve()
         targets = [output / name for name in ("filerefs.csv", "listed_files.csv")]
-        if output.is_relative_to(root) or any(path.resolve().is_relative_to(root) for path in targets):
+        prefix = game_prefix(root)
+        if output.is_relative_to(prefix):
             raise ValueError("output must be outside the retail install")
         ref_rows, listing_rows = inventory(root, args.exe)
         output.mkdir(parents=True, exist_ok=True)

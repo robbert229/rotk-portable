@@ -13,7 +13,7 @@ from uuid import UUID
 from tools import pecat
 
 REPO = Path(__file__).resolve().parents[1]
-GAME = Path(os.environ.get("ROTK_GAME_DIR") or pecat.DEFAULT_GAME_DIR)
+GAME = pecat.game_dir()
 ROTK_SHA256 = "95af128c93c63fe5d847609b45f3ba146af56f01c76215389bd1aabf0eb2a5a2"
 GUID = UUID("10203040-5060-7080-90ab-cdef01234567")
 
