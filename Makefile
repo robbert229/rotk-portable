@@ -63,3 +63,7 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 .PHONY: validate-dump
 validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+
+.PHONY: corpus-verify
+corpus-verify:
+	@$(PYTHON) -I tools/corpus.py --verify
