@@ -1,7 +1,8 @@
 # `.GEO` (MOEG) geometry and `.txw` (TXW) texture container
 
 C7/D7 deliverable ([spec](../deliverables.md)). Reverse-engineered from the only samples on
-disk — `Data/Game/fro/Ring.GEO` (29,332 B) and `Data/Game/fro/Ring.txw` (24,800 B) — both
+disk — `Data/Game/fro/Ring.GEO` (29,332 B) and `Data/Game/fro/Ring.txw` (24,800 B)
+[observed: re/corpus/formats.csv and re/corpus/assets.csv]. Both are
 extractable with [`tools/unpac.py`](../../tools/unpac.py) and kept locally in
 [`assets/samples/`](../../assets/samples/) (copyrighted — gitignored, not committed;
 see [index.md](index.md) for the regeneration commands). Every field is tagged
@@ -21,6 +22,8 @@ vertex/UV and DXT layouts end-to-end.
 
 File = 16-byte header + vertex array + index-count + u16 index array; size arithmetic is
 exact with no padding (`0x10 + 784×0x20 + 4 + 2112×2 = 29,332` = file size) [observed].
+The corpus records 704 triangles and XYZ extents (max minus min) of
+26.213908 × 26.214307 × 6.291624 model units [observed: re/corpus/assets.csv].
 
 | Offset | Type | Value (Ring.GEO) | Meaning | Tag |
 |---|---|---|---|---|
@@ -31,7 +34,7 @@ exact with no padding (`0x10 + 784×0x20 + 4 + 2112×2 = 29,332` = file size) [o
 | +0x10 | struct[784] | — | vertex array, stride **0x20** | observed |
 | vertex +0x00 | f32[3] | bbox ±13.107, ±3.146 | position | observed (ring radius 13.1, z ±3.1) |
 | vertex +0x0C | f32[3] | ‖n‖ ∈ [1.0000, 1.0000] | unit normal | observed (all 784 normalized) |
-| vertex +0x18 | f32[2] | 0.30–0.50 (some |uv|>1) | texture coords, tiling | observed |
+| vertex +0x18 | f32[2] | 0.30–0.50 (some \|uv\| > 1) | texture coords, tiling | observed |
 | +0x6210 | u32 | 2112 | index count (= 3 × 704 triangles) | observed (exact size arithmetic) |
 | +0x6214 | u16[2112] | max = 783 | CCW? triangle list | observed (max idx = verts−1; winding **unknown**) |
 
@@ -46,7 +49,9 @@ Notes:
 ## `.txw` — TXW texture bank
 
 File = `TXW ` header + sequence of RIFF-like chunks (`char[4] type`, u32 size, payload).
-Layout below fully reconciles: chunk stream ends exactly at EOF [observed].
+The chunk stream ends at EOF [observed: retail TXW chunk headers]. The corpus
+records version 528, two 256×64 entries (`ringglos` ID 2 and `ring` ID 1), and
+the raw TXHE `+0x41` values 7 and 0 [observed: re/corpus/assets.csv].
 
 ```
 +0x00  u32 'TXW '   magic                                   [observed]
@@ -56,8 +61,8 @@ Layout below fully reconciles: chunk stream ends exactly at EOF [observed].
        chunk TXHE, size 80×N: entry array (see below)
        chunk CLHE, size 0:   palette header (empty)               [unknown]
        chunk TXDA, size 24,584: raw block payload for ALL entries [observed]
-            (declared size = 24,576 used + 8 trailing bytes; the
-             declared-size field appears to count 8 header bytes)  [inferred]
+            (24,576 texture bytes + 8 trailing payload bytes) [observed: TXDA and next CLDA offset]
+            purpose of trailing bytes                        [unknown]
        chunk CLDA, size 0:   palette data (empty)                 [unknown]
 ```
 
@@ -90,7 +95,8 @@ Layout below fully reconciles: chunk stream ends exactly at EOF [observed].
 | other | — | unknown → tool errors with the id | — |
 
 Alpha values in `ringglos` land exactly on 17·n multiples — the signature of DXT3's 4-bit
-alpha ramp [observed]. No mipmaps are stored (total TXDA = sum of level-0 sizes) [observed].
+alpha ramp [observed]. The two level-0 images consume 24,576 of the 24,584 TXDA payload bytes
+[observed: entry sizes and TXDA header]. [inferred: the sample carries only level-0 images.]
 
 ## Open questions (for more samples)
 
@@ -98,4 +104,5 @@ alpha ramp [observed]. No mipmaps are stored (total TXDA = sum of level-0 sizes)
 2. Index-buffer winding and whether strips ever occur.
 3. Semantics of TXHE `+0x0E/+0x10/+0x3D/+0x40/+0x41/+0x42`; palette (CLHE/CLDA) usage.
 4. Whether `.txw` ever embeds mips or larger palettes.
-5. GIM/.geo siblings — none exist in the install; may appear in `.pac` (D6) or `.scw` (D5).
+5. Embedded GIM or GEO siblings [unknown]. The installed corpus contains only
+   the Ring GEO/TXW pair [observed: re/corpus/formats.csv].

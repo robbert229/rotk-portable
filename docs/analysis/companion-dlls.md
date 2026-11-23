@@ -1,28 +1,31 @@
 # Companion DLL dossiers — FileParser / DivxMediaLib / DivxDecoder
 
 C8/D1 deliverable ([spec](../deliverables.md#phase-c8--companion-dll-analysis)).
-All three DLLs are unprotected VS6 x86 PEs (linker 6.00, timestamp 2003-08-14), analyzed
-statically with REA/Ghidra 12.1.4. Every claim is tagged **observed** / **inferred** / **unknown**.
+All three DLLs are x86 PEs with linker version 6.00 and COFF timestamps dated
+2003-08-14 [observed: re/corpus/binaries.csv]. The static analysis used
+REA and Ghidra 12.1.4. Claims are tagged **observed** / **inferred** / **unknown**.
 
 ## Call graph
 
 ```
 ROTK.exe  (LLVideoDivX_Win.c / LLVideo.c)
-   │  OpenDivxFile, DivxPlay/Pause/Resume/Stop, DivxNextFrame, DivxDoFrame,
-   │  DivxGetContentInfo, DivxSetVideoBuffer/AudioBuffer/OutputVideoFormat, …   [observed: ROTK.exe strings]
+   │  12 delay-load imports including OpenDivxFile, DivxNextFrame and DivxDoFrame
    ▼
 DivxMediaLib.dll          player/orchestrator (threads, buffering, play control)
-   ├──► FileParser.dll    AVI container splitter + frame/buffer manager          [observed: import table]
-   │       12 of its 16 exports are imported by DivxMediaLib
+   ├──► FileParser.dll    AVI container splitter + frame/buffer manager
+   │       12 imports from a DLL with 16 export slots
    └──► DivxDecoder.dll   DivX 4/5 video codec (Decode/Init/Uninit/SetOutputFormat)
-           4 exports imported by DivxMediaLib
+           4 imports from a DLL with 4 export slots
 ```
-**Observed**: import tables (pefile) of each DLL; DivxMediaLib imports `DivxDecode`,
-`InitializeDivxDecoder`, `UnInitializeDivxDecoder`, `SetOutputFormat` from
-`DivxDecoder.dll` and 12 `divx*` functions from `FileParser.dll`.
-The game never imports FileParser/DivxDecoder directly (no such strings in ROTK.exe imports).
+[observed: re/corpus/pe_imports.csv and re/corpus/binaries.csv] DivxMediaLib imports
+`DivxDecode`, `InitializeDivxDecoder`, `UnInitializeDivxDecoder` and `SetOutputFormat`
+from `DivxDecoder.dll`, and 12 `divx*` functions from `FileParser.dll`. Neither
+companion appears in the packed executable's ordinary or delay-load import directory.
 
 ## Identity
+
+[observed: re/corpus/binaries.csv, re/corpus/pe_sections.csv, and the REA evidence
+below] Section sizes are raw / virtual in bytes (hex). Export counts are address-table slots.
 
 | | FileParser.dll | DivxMediaLib.dll | DivxDecoder.dll |
 |---|---|---|---|
@@ -30,22 +33,28 @@ The game never imports FileParser/DivxDecoder directly (no such strings in ROTK.
 | Size | 86,016 | 86,016 | 397,312 |
 | Linker | 6.00 (VS6), 2003-08-14 16:59 | 6.00, 2003-08-14 16:59 | 6.00, 2003-08-14 16:59 |
 | Image base | 0x10000000 | 0x10000000 | 0x10000000 |
-| Sections | .text 48K, .rdata 8K, .data 25K, .reloc, **tdb** | .text 44K, .rdata 12K, .data 28K, .reloc, **tdb** | .text 232K, .rdata 76K, .data 82K, .reloc, **tdb** |
+| `.text` | `0xc000 / 0xbb76` | `0xb000 / 0xa0ea` | `0x3a000 / 0x39c0c` |
+| `.rdata` | `0x2000 / 0x1386` | `0x3000 / 0x2670` | `0x13000 / 0x120a9` |
+| `.data` | `0x4000 / 0x64b4` | `0x4000 / 0x6fac` | `0x11000 / 0x14780` |
+| `.reloc` | `0x2000 / 0x130a` | `0x2000 / 0x13fe` | `0x2000 / 0x1ade` |
+| Ordinary imports | 68 | 81 | 60 |
+| Delay-load imports | 0 | 0 | 0 |
+| Export slots | 16 | 22 | 4 |
 | Ghidra procs / strings | 341 / 203 | 303 / 234 | 467 / 132 |
 | REA Evidence | `ev_7bbf06882e42bc25…` | `ev_bbbfa1074e47a3d3…` | `ev_b570f9bef37e9948…` |
-| CRT | static MSVC6 CRT (R60xx strings, `Microsoft Visual C++ Runtime Library`) | same | same |
+| CRT | MSVC 6.0 family [observed: re/corpus/libraries.csv]. Static linkage [inferred: runtime strings and import list] | same | same |
 
-> **Observation (cross-cutting):** all three unprotected DLLs contain a 4 KB `tdb`
-> section — the same oddly-named section seen in the SafeDisc-wrapped `ROTK.exe`.
-> Therefore `tdb` is an artifact of EA's build/post-link pipeline, **not** of SafeDisc.
-> Its producer/purpose: **unknown**.
+> Superseded: the earlier `tdb` section and EA post-link attribution. The three
+> DLLs each have the four sections above, and the packed executable's eight
+> section names also exclude `tdb` [observed: re/corpus/pe_sections.csv].
 
 ## FileParser.dll — AVI splitter / demuxer + buffer manager
 
 **D4 verdict (this document closes D4):** FileParser.dll is **not** an archive/`.pac`
 reader. It is the **AVI container parser ("splitter") and frame-buffer manager of the
 DivX playback stack**. Confidence: high.
-Evidence: (a) 12 of 16 exports imported by DivxMediaLib.dll [observed-import table];
+Evidence: (a) 12 imports by DivxMediaLib.dll from the 16-slot export table
+[observed: re/corpus/pe_imports.csv and re/corpus/binaries.csv];
 (b) its private strings are AVI-parsing diagnostics: `"Not an AVI file"`,
 `"AVI file has no MOVI list (corrupted?)"`, `"AVI file has no header list (corrupted?)"`,
 `"AVI file has no video data"`, `"Not DIVX 5.0 encoded"`, `"operation needs an index"`,
@@ -71,8 +80,9 @@ Evidence: (a) 12 of 16 exports imported by DivxMediaLib.dll [observed-import tab
 | `divxGetErrorMessage` | 0x4170 | Error code → message (table of AVI strings above) | observed (message table in .rdata) |
 | `divxSetToStart` | 0x3DF0 | Rewind to first frame | inferred |
 
-Imports: KERNEL32 only (68: file I/O incl. **overlapped** `ReadFileEx`/`CancelIo`/
-`WaitForSingleObjectEx` → async file reads **observed**; heap; threads) + static CRT.
+Imports: 68 from `KERNEL32.dll`, including `ReadFileEx`, `CancelIo` and
+`WaitForSingleObjectEx` [observed: re/corpus/pe_imports.csv]. [inferred: overlapped
+file reads from these APIs.]
 
 ## DivxMediaLib.dll — playback orchestrator (game-facing API)
 
@@ -87,7 +97,7 @@ Imports: KERNEL32 only (68: file I/O incl. **overlapped** `ReadFileEx`/`CancelIo
 | `DivxSetNumAudVidBuffers` | Buffer depth config → `divxSetAudVidBuffers` | observed (import edge) |
 | `DivxPlay`/`DivxPause`/`DivxResume`/`DivxStop` | Transport control (threaded play) | inferred; threading **observed** (`CreateThread`, `WaitForMultipleObjects` imports) |
 | `DivxNextFrame` / `DivxDoFrame` | Pull/advance one video frame (decode via DivxDecoder) | inferred |
-| `DivxNextAudioChunk` | Pull next audio block (game feeds DirectSound) | inferred |
+| `DivxNextAudioChunk` | Pull next audio block | inferred |
 | `DivxGotoFrame` / `DivxGotoFrameEx` | Seek | inferred |
 | `DivxModeSet` / `DivxProfile` | Playback mode / profile query | unknown |
 | `DivxSetCallBackFn` | Progress/completion callback | inferred |
@@ -96,29 +106,32 @@ Imports: KERNEL32 only (68: file I/O incl. **overlapped** `ReadFileEx`/`CancelIo
 Extra strings: `"Error occurred while opening the file. Probable system error"`,
 `"Error occured while reading the input file."`, `"Free Play stopped due to unexpected
 error."`, `"Function: DivxDoFrame"` [observed]. Imports: KERNEL32 (65, threads/events/
-critical sections/clock), `FileParser.dll` (12), `DivxDecoder.dll` (4) [observed].
+critical sections/clock), `FileParser.dll` (12), `DivxDecoder.dll` (4) [observed: re/corpus/pe_imports.csv].
 
 ## DivxDecoder.dll — DivX 4/5 video codec
 
 Exports (4): `InitializeDivxDecoder`, `UnInitializeDivxDecoder`, `SetOutputFormat`,
 `DivxDecode` [observed]. 467 functions in 232 KB `.text` — consistent with a software
-codec core [inferred]. Strings are CRT-only (no branding) [observed-ev_b570f9be…];
+codec core [inferred; raw size observed: re/corpus/pe_sections.csv]. The string
+scan records CRT fingerprints and the `DivxDecode` SDK anchor
+[observed: re/corpus/libraries.csv].
 `SetOutputFormat` + game's `DivxSetOutputVideoFormat` imply a pixel-format-agnostic
-RGB/blit output [inferred]. Audio is **not** decoded here (no audio imports/strings) —
-MP3/audio path lived in the game's own DirectSound stack [inferred].
+RGB/blit output [inferred]. The decoder imports 60 functions, all from `KERNEL32.dll`
+[observed: re/corpus/pe_imports.csv]. [inferred: video-only role based on its
+exports and the shipped AVIs.]
 Exact codec lineage (OpenDivX-derived? licensed On2?): **unknown**.
 
 ## FMV consumer evidence (ROTK.exe side)
 
-Observed in ROTK.exe strings: `OpenDivxFile`, `CloseDivxFile`, `DivxDoFrame`,
-`DivxNextFrame`, `DivxNextAudioChunk`(?) , `DivxGetContentInfo`, `DivxGetLastError`,
-`DivxFormatErrorMessage`, `DivxModeSet`, `DivxProfile`, `DivxSetNumAudVidBuffers`,
-`DivxSetOutputVideoFormat`, `DivxSetVideoBuffer`, `DivxDecoder.dll`, `DivxMediaLib.dll`,
-plus source path `LL\Win\LLVideoDivX_Win.c`. (Full caller-side sequencing → [fmv-pipeline.md](fmv-pipeline.md), D3.)
+The packed executable's 12 delay-load imports from `DivxMediaLib.dll` are listed in
+[fmv-pipeline.md](fmv-pipeline.md#caller-side-rotkexe--evidence). The earlier call
+sketch included threaded transport functions and tentatively identified
+`DivxNextAudioChunk`. The visible import directories contain none of those names
+[observed: re/corpus/pe_imports.csv]. [unknown: additional runtime-resolved calls.]
 
 ## Unknowns / next probes
 
-- `tdb` section producer (EA pipeline) — compare `Support/*.exe` (also EA-built) for the same section.
+- Meaning of the packed executable’s `tdb` overlay string hits (see [SafeDisc research](../research/safe-disc.md#packed-section-map)).
 - Per-export parameters/ABI → D2 headers via targeted Ghidra decompiles.
 - `DivxModeSet`/`DivxProfile` semantics.
 - Audio codec + timestamping model (game-side; needs unpacked exe or runtime trace).

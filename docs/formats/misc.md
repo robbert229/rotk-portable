@@ -1,16 +1,17 @@
 # Misc installed files — provenance & formats
 
 C7/D8 deliverable ([spec](../deliverables.md)). Covers every non-`.scw`/`.GEO`/`.txw`/
-`.avi`/PE file in the retail install root and `Support/`. Claims tagged **observed**
+`.avi`/PE file in the retail install root and `Support/`, along with selected PE identities. Claims tagged **observed**
 (byte/text evidence at the cited location), **inferred**, or **unknown**.
 
 Install root: `…\EA GAMES\LOTR The Return of the King tm\` (read-only corpus).
 
 ## `Input.ini` (34,157 B, dated 2003-10-03 in box)
 
-INI file consumed by the game's input system (game imports DirectInput 8; the string
-`kWinFE_InptCfg_*` front-end screens exist in `ROTK.exe` [observed: string cache]).
-Structure [observed]:
+INI file consumed by the game's input system [inferred: bindings below and the
+`DirectInput8Create` delay-load import in re/corpus/pe_imports.csv]. The file contains
+769 ASCII lines and 25 section headers [observed: re/corpus/assets.csv].
+Structure [observed: Input.ini]:
 
 - **`;`-comment lines** and 25 `[section]` headers.
 - **`[input_alias_list]`** — maps logical actions to abstract controller tokens:
@@ -66,53 +67,56 @@ CSV `disc,type,path` lines (both ints; meanings **inferred/unknown**):
 3,5,00000000.256  3,5,00000000.016
 ```
 
-**Key evidence for D6**: the game shipped as three `.pac` archives (`data_N.pac`, one per
-disc, "type 5" = archived payload) which the installer **expanded** into `Data\` — they do
-not exist post-install. This corroborates the D6 blocker (spec + `tools/unpac.py` need the
-original discs/ISO). The type-0 entries (`cache.dat`, `C_TMP00_.DAT`) are runtime-created
-and already absent [observed].
+The three `data_N.pac` names occur in the installer list and are absent from the
+install [observed: re/corpus/listed_files.csv]. The retail PAC spec records a
+comparison that matched all 83 file members to the installed `Data/` tree
+[observed: PAC spec and re/corpus/manifest.csv]. This supersedes the earlier
+disc-access blocker for identifying the format. The type-0 entries `cache.dat`
+and `C_TMP00_.DAT` are also absent [observed: re/corpus/listed_files.csv].
+[inferred: temporary files from their names.]
 
 ## `manifest.txt` (2,189 B) — installed-payload inventory [observed]
 
-One path per line, backslash-separated: the full post-expand payload —
-22 mission/global `.scw` (incl. `Data\Game\fro\Ring.GEO`/`Ring.txw`, the only standalone
-mesh pair), 21 `Data\Movies\*.avi`, 16 `Data\Special\*.avi`, 24 `Data\Player\{Char,Foll}_*.scw`
-(character/follower packages — **standalone LRTC containers**, observed via
-`tools/scwdump.py`; 12 hero pairs — Ara, ArC, Far, FrD, Fro, Gan, Gim, Leg, Mer, Pip,
-SaC, Sam [names inferred from stems]), and the four SafeDisc strays
-(`00000000.016/.256`, `DrvMgt.dll`, `SECDRV.SYS`). Every listed file exists on disk
-[observed]. Good coverage oracle for a `.pac` reimplementation once the ISO is available.
+The 87 paths all resolve in the retail install [observed: re/corpus/listed_files.csv].
+They cover 18 COTS mission scenes and 26 standalone LRTC files (GlobScen, LoadOnce and
+24 character/follower packages), with `Ring.GEO` and `Ring.txw` as separate entries.
+The prior count of 22 mission/global SCWs included the two Ring files. The list also
+contains 21 `Data/Movies/*.avi`, 16 `Data/Special/*.avi` and four SafeDisc-related
+files (`00000000.016`, `00000000.256`, `DrvMgt.dll` and `SECDRV.SYS`)
+[observed: re/corpus/listed_files.csv, re/corpus/formats.csv and re/corpus/assets.csv].
+The 24 player files form 12 `Char`/`Foll` pairs [observed: re/corpus/assets_scw.csv].
+Stems are Ara, ArC, Far, FrD, Fro, Gan, Gim, Leg, Mer, Pip, SaC and Sam
+[inferred: hero identities from the stems].
 
 ## `00000000.016` (307,324 B) and `00000000.256` (308,278 B) — BMP bitmaps
 
-Both are plain **8-bit BMPs**, 640×480, `biCompression=BI_RGB` [observed]:
+Both files classify as BMP despite the numeric suffixes [observed: re/corpus/formats.csv].
+Their headers give 640×480, 8 bits per pixel and `biCompression=BI_RGB`
+[observed: retail BMP headers]:
 
 | File | offBits | palette | pixels | biSizeImage |
 |---|---|---|---|---|
 | `.016` | 0x7A | **17 entries** (partial: `f6edd2, e5cf9b, cfac6c, …` parchment/gold ramp) | 307,200 B, 15 distinct indices | 0 |
 | `.256` | 0x436 | 256 entries (greyscale ramp starts `ffffff, 040404, 0c0c0c…`) | 307,200 B, 254 distinct | 0x4B000 |
 
-Provenance [inferred]: listed in `filelist.txt` under disc 3 **next to** `DrvMgt.dll` +
-`SECDRV.SYS` (SafeDisc components), and no game code path or asset-name reference exists
-in `ROTK.exe` strings for them. They are SafeDisc 3's own resources — most plausibly its
-full-screen error/"insert disc" backdrop(s) (17-colour parchment variant + 256-colour
-variant). Exact use: **unknown** until the SafeDisc dump.
+The installer lists both bitmaps alongside `DrvMgt.dll` and `SECDRV.SYS`
+[observed: re/corpus/listed_files.csv]. [inferred: SafeDisc resources, possibly
+full-screen error or disc-prompt backdrops.] [unknown: exact use.]
 
 ## `SECDRV.SYS` (12,528 B) + `DrvMgt.dll` (41,472 B) — SafeDisc 3 support
 
 - `SECDRV.SYS`: i386 PE kernel driver, sections `.text/.data/INIT/.rsrc/.reloc`,
-  TimeDateStamp 0x3E8E8A5A (2003-03-18) [observed: pefile]. Contains debug path
-  `sys\secdrv.dbg` and the string `ecdrv.sys` [observed] — the well-known Macrovision
-  **SafeDisc/SecuRom anti-copy driver** (also shipped with thousands of 2003 titles; it
-  was the subject of the 2005 Sony-rootkit-era security uproar) [inferred: public
-  knowledge, not re-verified here].
-- `DrvMgt.dll`: Win32 DLL, TimeDateStamp 0x3F44A040 (2003-07-25), exports exactly
-  **`Remove`, `Setup`, `_DllMain@12`** [observed: pefile] ⇒ install/remove helper for
-  `SECDRV.SYS` ("driver manager") — the SafeDisc loader asks the user (or silently)
-  installs the driver at first run [inferred].
-- Together with the SafeDisc 3 packing of `ROTK.exe` (see README toolchain section) these
-  confirm the copy-protection stack. No SafeDisc payload is in these files themselves —
-  the protection core is inside `ROTK.exe`'s packed overlay.
+  COFF timestamp 2003-03-19 11:33:46 UTC
+  [observed: re/corpus/binaries.csv, re/corpus/pe_sections.csv]. Contains debug path
+  `sys\secdrv.dbg` and the string `ecdrv.sys` [observed: retail driver strings].
+  The version resource identifies the Macrovision security driver and gives file
+  version `3.19.000` [observed: re/corpus/binaries.csv, re/corpus/libraries.csv].
+- `DrvMgt.dll`: Win32 DLL, COFF timestamp 2003-07-25 10:25:36 UTC [observed: re/corpus/binaries.csv], with exports
+  **`Remove`, `Setup`, `_DllMain@12`** [observed: pefile and re/corpus/binaries.csv
+  (three slots)]. [inferred: install/remove helper for `SECDRV.SYS` from the
+  export names and embedded driver-name string.]
+- The executable’s SafeDisc fingerprint is documented in the [WP-1.1 scan](../research/safe-disc.md#wp-11--static-fingerprint-of-the-retail-executable).
+  [unknown: division of runtime responsibilities among the executable, helper and driver.]
 
 ## `Support/` — installer & registration payloads
 
@@ -120,28 +124,33 @@ variant). Exact use: **unknown** until the SafeDisc dump.
 |---|---|---|
 | `config.xml` (897 B) | **EA Reg 2.0** registration client config: subs feed `https://account.ea.com/subsxml/subsxml.jsp`, `game-id GAME-LOTR-ROTK`, registry keys `HKLM\SOFTWARE\Electronic Arts\EA GAMES\LOTR The Return of the King tm\{ergc,MemberName,Registered}`, locale key under `EA GAMES\…\Locale`, `debug 1` | observed (full XML) |
 | `EReg.exe` (1.44 MB) | EA Registration client (reads `config.xml`; stores serial under `ergc`) | inferred from config + name |
-| `ereg-dict-<locale>.xml` ×11 (de, en_UK, en_US, es, fr_FR, it, ko, nl, pl, pt_BR, pt_PT, sv) | localized string tables for EReg dialogs | inferred from naming |
-| `EasyInfo.exe` (323 KB) + `en-us_eahelp.hlp` (495 KB) | EA "EasyInfo" system-info collector + Windows Help manual for support tickets | inferred from names/WinHelp format |
+| `ereg-dict-<locale>.xml` ×12 (de, en_UK, en_US, es, fr_FR, it, ko, nl, pl, pt_BR, pt_PT, sv) | Localized string tables for EReg dialogs | [observed: re/corpus/assets.csv, 12 dictionary files plus config.xml] [inferred: role from names] |
+| `EasyInfo.exe` (323,584 B) + `en-us_eahelp.hlp` (507,358 B) | EA "EasyInfo" system-info collector + Windows Help manual for support tickets | [observed: re/corpus/binaries.csv and re/corpus/assets.csv] [inferred: roles from names and WinHelp format] |
 | `go_ez.exe` (69 KB) | "Get Online Easy" shortcut launcher | inferred |
 | `en-us_eula.txt` (6.4 KB) | EULA; header observed: "SUPPLEMENTAL END USER LICENSE AGREEMENT FOR MICROSOFT SOFTWARE" — the *visible* file is the MS-component supplemental EULA, not the full EA EULA | observed |
-| `readme.txt` (18.6 KB) | box readme, "Version 1.0, November 5, 2003" (ships **after** Oct 2003 exes — day-one-patch-era rebuild) | observed header |
-| `LOTR The Return of the King tm_{code,EZ,uninst}.exe`, `EAInstall`-era stubs | installer support binaries (`tm_code.exe` is byte-identical size to `eauninstall.exe`, 290,816) | observed sizes; roles inferred from names |
+| `readme.txt` (18.6 KB) | box readme, "Version 1.0, November 5, 2003" (dated after the October 2003 executable headers [observed: re/corpus/binaries.csv]) | observed header |
+| `LOTR The Return of the King tm_{code,EZ,uninst}.exe`, `EAInstall`-era stubs | Installer support binaries. `tm_code.exe` identifies itself as CDKey in its version resource and has a `CDKey2.pdb` path. It shares the 290,816-byte size of `eauninstall.exe` and has a distinct hash | [observed: re/corpus/binaries.csv] [inferred: installer roles] |
 
 ## Root PE strays (identity recap)
 
 `DivxMediaLib.dll`/`FileParser.dll`/`DivxDecoder.dll` — analyzed in
-[companion-dlls.md](../analysis/companion-dlls.md). `eax.dll` (139,264 B, 2003-09-24) =
-Creative EAX/DirectSound wrapper — game imports `EAXDirectSoundCreate8` [observed: string
-cache]. `eauninstall.exe` / `rotk_uninst.exe` = EA uninstaller stubs [inferred].
-`ROTK.ico` = shell icon. `ROTK.exe` (2,874,240 B) = SafeDisc-packed game
-(`docs/research/safe-disc.md` governs it).
+[companion-dlls.md](../analysis/companion-dlls.md). Creative’s `eax.dll`
+(139,264 B) identifies itself as EAX Unified 3.066 and has COFF timestamp
+2003-08-15 20:55:32 UTC [observed: re/corpus/binaries.csv, re/corpus/libraries.csv].
+`EAXDirectSoundCreate8` is a string fingerprint in the packed executable
+[observed: re/corpus/libraries.csv]. [unknown: runtime resolution of that API.]
+`eauninstall.exe` and `rotk_uninst.exe` are EA uninstallers
+[inferred: filenames and re/corpus/binaries.csv debug paths].
+`ROTK.ico` is an icon file [observed: re/corpus/formats.csv]. The 2,874,240-byte
+`ROTK.exe` is the packed game [observed: re/corpus/binaries.csv and
+[SafeDisc fingerprint](../research/safe-disc.md#wp-11--static-fingerprint-of-the-retail-executable)].
 
 ## Unknowns / follow-ons
 
 1. `.016`/`.256` exact render site — check the SafeDisc-dumped exe.
 2. `filelist.txt` column semantics (disc/type?) — confirm against the original disc layout.
-3. `Data\Player\Char_*`/`Foll_*` `.scw` internals — **observed**: standalone **LRTC**
-   container (same `header 0x18` + `COHS` index walk to 0x60 as `LoadOnce.scw`),
-   1.5 MB chars / 512 KB followers; payload internals undecoded (same LRTC unknowns as
-   GlobScen/LoadOnce).
+3. `Data\Player\Char_*` and `Foll_*` resource payloads [unknown]. All 24
+   standalone LRTC files use 0x18-byte headers and walk to EOF, superseding
+   the earlier leading-COHS coverage note
+   [observed: re/corpus/assets_scw.csv and re/corpus/scw_chunk_summary.csv].
 4. `cache.dat` producer/reader — probably the game's asset cache; verify post-dump.
