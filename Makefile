@@ -63,3 +63,7 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 .PHONY: validate-dump
 validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+
+.PHONY: corpus-formats
+corpus-formats:
+	$(PYTHON) -I tools/corpus_formats.py --game-dir "$(ROTK_GAME_DIR)"
