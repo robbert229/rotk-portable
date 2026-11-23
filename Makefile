@@ -63,3 +63,7 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 .PHONY: validate-dump
 validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+
+.PHONY: pecat
+pecat:
+	ROTK_GAME_DIR="$(ROTK_GAME_DIR)" $(PYTHON) -I tools/pecat.py
