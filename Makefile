@@ -83,3 +83,10 @@ filerefs:
 .PHONY: corpus-verify
 corpus-verify:
 	@$(PYTHON) -I tools/corpus.py --verify
+
+.PHONY: libscan refs
+libscan:
+	$(PYTHON) -I tools/libscan.py "$(ROTK_GAME_DIR)" --output re/corpus/libraries.csv
+
+refs:
+	$(PYTHON) -I tools/refs.py fetch
