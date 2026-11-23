@@ -155,11 +155,12 @@ into tickets before an agent starts it.
 
 Background and tool survey: [`research/safe-disc.md`](research/safe-disc.md).
 
-#### WP-1.1 Static SafeDisc version fingerprint · S
+#### WP-1.1 Static SafeDisc version fingerprint · S · **done** (#11)
 - **Deliverables:** an addendum to `safe-disc.md` with the exact SafeDisc version (search for the `BoG_`/`SD2`-style marker and the stub signatures), plus the section-by-section role of `stxt371`/`stxt774`/`tdb`.
+- **Delivered:** `BoG_` marker at file+0xFD4 with version fields 3/10/20 (**observed**), read as **SafeDisc 3.10.020** (**inferred**, BurnOutSharp layout). `SECDRV.SYS` reports 3.19.000 (**observed**). Eight sections; there is no `tdb` section, the earlier name was a misreading of a section named with eight spaces (**observed**). The OS/subsystem header fields are normal (4.0, GUI), not scrambled. Entry point at packed VA 0x009C305E in `stxt371`. Roles of `stxt774`, `.data1` and the space-named section remain **unknown**. See [`safe-disc.md` §WP-1.1](research/safe-disc.md#wp-11--static-fingerprint-of-the-retail-executable).
 - **Accept:** version with offset evidence, or a documented negative with the search coverage listed.
 
-#### WP-1.2 Dump runbook · M
+#### WP-1.2 Dump runbook · M · **partial** (#12; rework from dry-run review in WP-1.2b)
 - **Deliverables:** `docs/research/unpack-runbook.md`, a click-by-click procedure for the owner:
   - VM spec (32-bit Windows XP SP3 or 7, snapshot points)
   - SafeDiscShim vs. SafeDiscLoader2 choice
@@ -167,14 +168,16 @@ Background and tool survey: [`research/safe-disc.md`](research/safe-disc.md).
   - **OEP signature taken from the unprotected EA helpers.** `eauninstall.exe` and `rotk_uninst.exe` share linker 7.00 (**observed**), so their `mainCRTStartup`/`WinMainCRTStartup` byte pattern is a template for recognising ROTK's OEP (**inferred**).
   - Scylla IAT autosearch + fix-dump, and which files to copy out
 - **Accept:** a dry-run review by a second agent finds no ambiguous steps; every tool has a version and URL.
+- **Status:** [`unpack-runbook.md`](research/unpack-runbook.md) merged; every tool pin resolves. The dry-run review returned **needs rework**: tool staging is lost on snapshot restore, there's no installed-exe hash check, debugger stop/OEP-confirmation steps and the Scylla IAT choice are ambiguous, validation doesn't match WP-1.3, and `safe-disc.md` still links distribution listings. **WP-1.2b** applies those fixes; a second dry run closes WP-1.2.
 
-#### WP-1.3 Dump validator · S
+#### WP-1.3 Dump validator · S · **done** (#13; gate alignment in WP-1.3b)
 - **Deliverables:** `tools/validate_dump.py`. Checks: PE sanity; EP inside `.text`; `.text` entropy below threshold; import DLL set ⊇ {`d3d8`, `dinput8`, `dsound`, `eax`, `DivxMediaLib`, `kernel32`, `user32`, …}; count of call/jmp targets from `.text` into SafeDisc sections; size near 2,874,232 B (no-CD oracle, **observed** via PCGW).
 - **Accept:** FAILS on the retail packed exe with clear reasons; PASSES the structural checks on `eauninstall.exe`; prints a JSON report.
+- **Delivered:** `tools/validate_dump.py`, `make validate-dump` ([`dump-validator.md`](research/dump-validator.md)). Both acceptance checks pass. Found: the packed exe is 2,874,240 B, only 8 B from the size reference (**observed**), so size can't distinguish a dump. **WP-1.3b** makes size and `DivxMediaLib` (probably late-bound, **inferred**) advisory, and adds a strict default mode that fails on any `.text` → SafeDisc-section call/jmp (the M1 gate) plus `--pre-repair` for the raw WP-1.4 capture.
 
 #### WP-1.4 Run the dump · **Human** · gate for M1
 - **Deliverables (local only):** `out/unpacked/ROTK_unpacked.exe`, Scylla log, VM notes. Committed: `re/corpus/unpacked.sha256` and a run log in the runbook.
-- **Accept:** `validate_dump.py` passes (allowing for the residual stub calls handled in WP-1.5).
+- **Accept:** `make validate-dump VALIDATE_FLAGS=--pre-repair` passes (residual stub calls are reported for WP-1.5). The strict default mode is the M1 gate after WP-1.5.
 
 #### WP-1.5 Post-dump repair · M · needs 1.4
 - **Goal:** no remaining dependence on SafeDisc code: redirected API thunks, stolen or emulated instructions, CD-check calls.
@@ -337,10 +340,12 @@ files. **post-gate** WPs need the matching reader code from P3.
 | 0.10 pac verify | blocked (ISOs) | `$ROTK_ISO_DIR` | S | yes |
 | 0.11 Ghidra round trip | blocked (no JDK) | JDK install | S | yes |
 | 0.12 game-dir default | todo | 0.10, 0.11 | S | — |
-| 1.1 SD fingerprint | ready | — | S | yes |
-| 1.2 dump runbook | ready | 0.6 (soft) | M | yes |
-| 1.3 dump validator | ready | — | S | yes |
-| 1.4 **dump (human)** | todo | 1.2, 1.3 | — | — |
+| 1.1 SD fingerprint | done (bca57ff) | — | S | — |
+| 1.2 dump runbook | partial (bd53eb2); rework → 1.2b, then second dry run | 1.2b | M | — |
+| 1.2b runbook rework | active (codex, wp/1.2b-runbook-rework) | — | S | yes |
+| 1.3 dump validator | done (11c9545) | — | S | — |
+| 1.3b validator gate | active (codex, wp/1.3b-validator-gate) | — | S | yes |
+| 1.4 **dump (human)** | todo | 1.2 (after 1.2b + dry run), 1.3b | — | — |
 | 1.5 dump repair | todo | 1.4 | M | — |
 | 1.6 Wine run | todo | 1.5 | S | — |
 | 2.1–2.7 | todo | M1 (+0.3, 0.4) | — | after 2.1 |
@@ -354,7 +359,7 @@ files. **post-gate** WPs need the matching reader code from P3.
 | R-2 | done (answered) | — | S | — |
 
 **Can start right now in parallel (no human, no decision needed):**
-0.9, 0.13, 1.1, 1.2, 1.3, 4.1, 4.2, 4.3a, 4.4, R-3, R-4. That is 11 independent agents.
+0.9, 0.13, 4.1, 4.2, 4.3a, 4.4, R-3, R-4. That is 8 independent agents (1.2b and 1.3b are already running).
 
 ---
 
