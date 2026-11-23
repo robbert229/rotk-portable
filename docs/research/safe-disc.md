@@ -1,8 +1,11 @@
 # SafeDisc — pre-existing solutions research (ROTK 2003 PC)
 
-Research note for the rotk-portable decompilation effort. Target: `ROTK.exe`
-(PE32 x86, SHA-256 `95af128c…b2a5a2`, MSVC 7.0, SafeDisc-protected: `stxt371`/`stxt774`/`tdb`
-sections, entry stub in `stxt371`, encrypted IAT, Ghidra sees only ~58 functions).
+Research note for the rotk-portable decompilation effort. Target: packed
+`ROTK.exe` (PE32 x86, SHA-256 `95af128c…b2a5a2`, linker 7.00, entry point
+in `stxt371`) [observed: re/corpus/binaries.csv]. The [WP-1.1 fingerprint](#wp-11--static-fingerprint-of-the-retail-executable)
+and the corpus supersede the early descriptions of a `tdb` section,
+scrambled optional-header fields and an encrypted visible IAT
+[observed: re/corpus/binaries.csv, re/corpus/pe_sections.csv, re/corpus/pe_imports.csv].
 
 Goal of this note: find **pre-existing** tools/work that can get us an *unpacked*
 image (OEP + rebuilt IAT) that Ghidra can decompile. Research only — no cracks were
@@ -47,9 +50,10 @@ This matches our binary observations: SafeDisc 3 integrates the loader stub *int
 exe and encrypts it (no `.ICD` sidecar), unlike v1/v2
 ([Wikipedia: SafeDisc](https://en.wikipedia.org/wiki/SafeDisc)). Consequence: the
 legacy static "unwrap" tools (SafeDiscCleaner/Safedisc2Cleaner ≤ v2.6/2.7, UnSafeDisc's
-ICD decryptor) almost certainly **do not apply** to ROTK. Verify directly: search the
-on-disk `ROTK.exe` for the SafeDisc version string (Wikipedia documents an `SD2` marker
-followed by version/subversion/revision dwords) and record the exact version.
+ICD decryptor) almost certainly **do not apply** to ROTK. WP-1.1 superseded the proposed `SD2` marker check with a
+`BoG_`-based fingerprint of 3.10.020 [inferred: the retail marker and detector
+layout in the [static fingerprint](#wp-11--static-fingerprint-of-the-retail-executable),
+with section-name evidence in re/corpus/libraries.csv].
 
 ---
 
@@ -308,8 +312,8 @@ with PE-sieve (dumps modified regions without needing exact OEP) and reconstruct
 `95af128c93c63fe5d847609b45f3ba146af56f01c76215389bd1aabf0eb2a5a2`,
 size `0x2bdb80`. VAs in this addendum refer to this packed image.
 The PE32 optional header gives image base `0x400000`, OS and subsystem
-versions 4.0, and Windows GUI subsystem (2), superseding the earlier
-description of those fields as scrambled.]
+versions 4.0, and Windows GUI subsystem (2).]
+[observed: re/corpus/binaries.csv corroborates these optional-header values.]
 
 [inferred: the retail executable uses **SafeDisc 3.10.020**.
 The [BurnOutSharp detector](https://github.com/claunia/BurnOutSharp/blob/master/BurnOutSharp/ProtectionFind.cs#L1303)
@@ -362,7 +366,8 @@ assigns neither a version.]
 ### Packed section map
 
 [observed: ROTK.exe has eight 40-byte section headers beginning at
-file+0x210. Numeric columns below come from those headers. Entropy is
+file+0x210, corroborated by re/corpus/pe_sections.csv. Numeric columns below
+come from those headers. Entropy is
 Shannon bits per byte over each full raw range, including file-alignment
 padding and excluding virtual zero-fill. Sizes, offsets and flags are hex.
 R/W/X denote the header memory flags.]
@@ -372,14 +377,25 @@ R/W/X denote the header memory flags.]
 | `.text` | 0x00401000 | 0x1000 | 0x134000 | 0x133C58 | `0x60000020` RX code | 7.9987 | [inferred: protected game code, based on executable mapping and near-uniform byte distribution across this raw range.] |
 | `.rdata` | 0x00535000 | 0x135000 | 0x25000 | 0x24DEC | `0x40000040` R initialized data | 5.6274 | [observed: readable game source paths, e.g. file+0x1362F4, and the debug directory at file+0x135220.] |
 | `.data` | 0x0055A000 | 0x15A000 | 0x1F000 | 0x446FB4 | `0xC0000040` RW initialized data | 7.9734 | [observed: writable data with a large virtual tail.] [inferred: protected initialized game data in the high-entropy raw range.] |
-| `.data1` | 0x009A1000 | 0x179000 | 0x1000 | 0x900 | `0xC0000040` RW initialized data | 5.4233 | [observed: its first 0x900 bytes have entropy 7.9125. The PE resource directory RVA starts here, with the named `.rsrc` section one page later.] [unknown: purpose of this early resource-directory page.] |
-| `.rsrc` | 0x009A2000 | 0x17A000 | 0x6000 | 0x5AE6 | `0x40000040` R initialized data | 3.5133 | [observed: lies within the resource directory's declared RVA span, which starts at 0x5A2000 in `.data1` and has size 0x5AA0.] |
+| `.data1` | 0x009A1000 | 0x179000 | 0x1000 | 0x900 | `0xC0000040` RW initialized data | 5.4233 | [observed: its first 0x900 bytes have entropy 7.9125.] [unknown: purpose of this page.] |
+| `.rsrc` | 0x009A2000 | 0x17A000 | 0x6000 | 0x5AE6 | `0x40000040` R initialized data | 3.5133 | [observed: PE directory 2 starts here at RVA 0x5A2000 (file+0x17A000), size 0x5AA0 (packed optional header and re/corpus/pe_sections.csv).] |
 | Eight ASCII spaces | 0x009A8000 | 0x180000 | 0x18000 | 0x173C8 | `0x42000040` R discardable initialized data | 6.0067 | [observed: file+0x180000 starts a sequence of 345 PE-shaped relocation blocks ending at file+0x1930A0, with 37,441 type-3 and 171 type-0 entries. The PE base-relocation directory is zero.] [inferred: retained relocation table.] [unknown: whether the stub consumes it and the purpose of the remaining bytes.] |
 | `stxt774` | 0x009C0000 | 0x199000 | 0x3000 | 0x202C | `0xE0000020` RWX code | 6.2162 | [observed: the first 0x202C bytes have entropy 7.9144.] [inferred: protected loader payload, based on the high-entropy contents and RWX mapping alongside the entry stub.] [unknown: runtime responsibilities and activation path.] |
 | `stxt371` | 0x009C3000 | 0x19C000 | 0x4000 | 0x31A8 | `0xE0000020` RWX code | 5.4983 | [observed: hosts the entry stub and bootstrap imports. Static decoding at VA 0x009C308D shows writes that replace the entry instruction with a relative jump. The import directory at file+0x19EF90 lists ten imported functions across six DLLs. The IAT at file+0x19F0A6 occupies 16 slots including six terminators.] |
 
-[observed: `tdb` is absent from the eight section names. Its two literal
-ASCII hits at file+0x248911 and +0x296516 lie in the overlay, which starts
+[observed: packed PE directory 2 and re/corpus/binaries.csv] The resource
+tree in `.rsrc` has types 3, 6 and 14. This supersedes the earlier placement
+of the directory in `.data1`, whose RVA is `0x5A1000`
+[observed: re/corpus/pe_sections.csv].
+
+[observed: re/corpus/binaries.csv and re/corpus/pe_imports.csv] The 10 ordinary
+bootstrap imports span six DLLs. A separate delay-load directory in `.rdata`
+(RVA and file offset `0x1585A0`, size `0xC0`) lists 21 imports across five DLLs:
+`d3d8.dll` (1), `DINPUT8.dll` (1), `MSACM32.dll` (6), `DivxMediaLib.dll` (12)
+and `DSOUND.dll` (1). [unknown: additional runtime-resolved imports.]
+
+[observed: re/corpus/pe_sections.csv records eight section names, with no
+`tdb` section.] [observed: the WP-1.1 scan found two literal `tdb` ASCII hits at file+0x248911 and +0x296516 in the overlay, which starts
 at file+0x1A0000.] [unknown: whether either overlay hit has a semantic
 meaning.]
 
