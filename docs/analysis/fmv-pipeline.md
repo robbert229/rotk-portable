@@ -20,7 +20,7 @@ All 37 retail AVIs contain one `DXGM` video stream and zero audio streams
 setup                                                 [inferred: timing]
   DivxSetNumAudVidBuffers(nvid, naud)                  [observed-import] → FileParser divxSetAudVidBuffers
 
-per FMV play ("Data/Movies/%s.avi")                    [observed: format string in ROTK.exe]
+per FMV play ("Data/Movies/%s")                        [observed: re/corpus/filerefs.csv]
   OpenDivxFile(path) ────────────────────────────────► divxSplitterFileParse(path,…,slot,…)  [observed: callee decompile]
                                                      └► divxBufManagerInit(slot, path)        [observed: callee decompile]
   DivxGetContentInfo(h, &info)                         [observed-import] → splitter divxGetContentInfo [observed decompile]
@@ -68,9 +68,11 @@ Supporting source-path strings [observed]:
 `...\code\LL\Win\LLVideoDivX_Win.c`, `...\code\LL\SoftwareVideo\LLPictInt.c`
 ⇒ dedicated Windows DivX video module + a software fallback renderer.
 
-FMV path + names [observed]: `Data/Movies/%s`, `data\movies\blakfmv1.vid`, FMV ids
-`ENDFMV1 OSGIFMV2 PAT1FMV2 GATEFMV2 MTYDFMV2 HELMFMV2 ISENFMV1 ATTRFMV1 …`
-(matching `Data/Movies/*.avi` stems). The `.vid` string has no install match [observed: re/corpus/filerefs.csv].
+The corpus records the literal pattern `Data/Movies/%s` and 21 matching install
+paths. It also records the literal `data\movies\blakfmv1.vid`, which has no
+install match [observed: re/corpus/filerefs.csv]. FMV IDs in the string scan
+include `ENDFMV1 OSGIFMV2 PAT1FMV2 GATEFMV2 MTYDFMV2 HELMFMV2 ISENFMV1 ATTRFMV1`
+[observed: ROTK.exe strings].
 [unknown: whether it is a legacy alias or an unfinished asset path.]
 
 ## Container facts (measured from the shipped FMVs) [observed]
