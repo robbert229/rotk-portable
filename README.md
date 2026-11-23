@@ -28,7 +28,7 @@ Established from PE headers, CodeView debug directory, embedded source paths, an
   - Sources are **C** (`.c` files throughout); dev roots `f:\EAThirdPerson\…` (build box) and `C:\Dev\lotr\rotk\`.
 - **Graphics / input / audio:** Direct3D 8 (`Direct3DCreate8`, `IDirect3D*8` refcount errors), DirectInput 8, DirectSound 8 + DirectMusic; **Creative EAX Unified 8** via `eax.dll` (`EAXDirectSoundCreate8`, EAXUnified8 COM classes).
 - **Video:** DivX FMVs through `DivxMediaLib.dll` + `DivxDecoder.dll` (`LLVideoDivX_Win.c`), not Bink.
-- **DRM / install:** **SafeDisc** (`SECDRV.SYS` = Macrovision `secdrv.sys`, `DrvMgt.dll` loader, `stxt774`/`stxt371`/`tdb` sections, scrambled subsystem/OS fields, relocated+encrypted import dir, entry stub in `stxt371`); EA Reg 2 online activation (`Support/EReg.exe`, `GAME-LOTR-ROTK`).
+- **DRM / install:** **SafeDisc 3.10.020** (`BoG_` version record, [WP-1.1](docs/research/safe-disc.md#wp-11--static-fingerprint-of-the-retail-executable); `SECDRV.SYS` 3.19.000 = Macrovision `secdrv.sys`, `DrvMgt.dll` loader, `stxt774`/`stxt371` plus a space-named section, relocated+encrypted import dir, entry stub in `stxt371`); EA Reg 2 online activation (`Support/EReg.exe`, `GAME-LOTR-ROTK`).
 
 ### Supporting binaries
 
@@ -70,6 +70,7 @@ Run everything through `make` (`make help` lists targets):
 | `make lint` | Validate `re/symbols/*.csv`; schema in [`re/README.md`](re/README.md) |
 | `make ghidra` / `ghidra-export` | Headless Ghidra project from `re/` ([`re/ghidra/README.md`](re/ghidra/README.md)) |
 | `make srcpaths` / `richhdr` | Regenerate the source-path inventory / decode Rich headers |
+| `make validate-dump` | Check an unpacked `ROTK.exe` dump ([`docs/research/dump-validator.md`](docs/research/dump-validator.md)) |
 | `make toolchain` / `hello` / `doctor` | Fetch the pinned MSVC 7.0 locally, compile a smoke test, check the setup |
 
 
@@ -77,7 +78,7 @@ Run everything through `make` (`make help` lists targets):
 - [x] Companion DLL analysis — C8/D1–D4 (dossiers, headers, FMV pipeline, FileParser verdict)
 - [x] Data format parsers — C7/D5 `.scw`, D7 `.GEO`/`.txw`, D8 misc (`tools/`, specs in `docs/formats/`)
 - [x] `.pac` archive extraction — C7/D6 done from retail ISOs: spec in `docs/formats/pac.md`, extractor `tools/unpac.py` (all 83 members SHA-256-verified vs installed tree)
-- [ ] Defeat SafeDisc wrapper for analysis: recover original entry point, real import table (IAT is trimmed to ~16 thunks; imports live in `stxt371`), unpack dump or runtime capture — plan in [`docs/research/safe-disc.md`](docs/research/safe-disc.md)
+- [ ] Defeat SafeDisc wrapper for analysis: recover original entry point, real import table (IAT is trimmed to ~16 thunks; imports live in `stxt371`), unpack dump or runtime capture — research in [`docs/research/safe-disc.md`](docs/research/safe-disc.md), owner procedure in [`docs/research/unpack-runbook.md`](docs/research/unpack-runbook.md) (rework in progress), check the result with `make validate-dump`
 - [x] Phase 0 foundations (M0): corpus manifest, test harness, symbol DB, headless Ghidra pipeline, source-path inventory, Rich-header tool, MSVC 7.0 toolchain
 - [ ] Full Ghidra function recovery (headless analysis finds only 48 functions in the packed exe)
 - [ ] Zone-payload / LRTC / audio-bank deep formats (follow-ons in `docs/formats/index.md`)
