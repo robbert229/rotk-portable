@@ -13,13 +13,14 @@ printable characters.
 
 [observed: parser commands in `tools/corpus_formats.py`] Each repository parser
 runs in isolated Python with a 30-second timeout. Success measures whether
-the tool parses its supported part of the format. `n/a` marks files without a
-repository parser. Regenerate with `make corpus-formats` and set
+the selected tool parses its supported part of the format. `n/a` marks files
+with no probe configured for this audit. The asset index separately parses AVI
+headers [observed: `tools/assetindex.py`, `assets_avi.csv`]. Regenerate with `make corpus-formats` and set
 `ROTK_GAME_DIR` to select the installation.
 
 ## Counts and parse rates
 
-| Detected format | Files | OK / attempted | Without a parser | Evidence |
+| Detected format | Files | OK / attempted | Without a probe | Evidence |
 |---|---:|---:|---:|---|
 | RIFF/AVI | 37 | — | 37 | [observed: `formats.csv`, RIFF/AVI rows] |
 | SCW LRTC | 26 | 26/26 (100%) | 0 | [observed: `formats.csv`, SCW LRTC rows] |
@@ -36,9 +37,10 @@ repository parser. Regenerate with `make corpus-formats` and set
 | **Total** | **120** | **61/61 (100%)** | **59** | [observed: all `formats.csv` rows] |
 
 - [observed: `scwdump.py --json`, `formats.csv` SCW rows] The COTS probe
-  parses the TOC. All 26 LRTC walks stop at file+0x60 after one `COHS` chunk.
-  [unknown: SCW spec] COTS zone payload framing and the LRTC stream beyond
-  that offset remain open.
+  parses the TOC. All 26 standalone LRTC walks reach EOF and account for 4,609
+  stream chunks. The corpus walk separately covers the bounded TOC regions of
+  all 18 COTS files [observed: `scw_chunk_summary.csv`]. COTS tails beyond those
+  regions remain unclassified [unknown: [SCW spec](../formats/scw.md)].
 - [observed: `geo2obj.py --json` and `txw2png.py --list`] The GEO probe
   parses the vertex and index tables. The TXW probe lists the texture table.
 - [observed: `richhdr.py --json`, `formats.csv` PE rows] Rich records
@@ -50,7 +52,7 @@ repository parser. Regenerate with `make corpus-formats` and set
 
 [observed: `formats.csv` has no `unknown` detections or `fail` statuses]
 All install rows classified, and every attempted parser returned its supported
-result. The table above records the 59 files without a parser by format.
+result. The table above records the 59 files without a configured probe by format.
 
 ## Extension and content mismatches
 

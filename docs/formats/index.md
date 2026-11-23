@@ -6,8 +6,8 @@ on-disk format, its spec, its tool, and honest coverage. Evidence tags inside ea
 
 | Format | Where | Spec | Tool | Status |
 |---|---|---|---|---|
-| `.scw` **COTS** (mission scene) | `Data/Game/<lvl>/<lvl>NN.scw` (41 files) | [scw.md §COTS](scw.md) | [`tools/scwdump.py`](../../tools/scwdump.py) | Container decoded: header, TOC (16 B records `kind/name_off/offset/size`, contiguous tiling verified on 4 files), name pool, embedded `RVWS`/`ELIF`/`LRTC` sub-docs, ~64 KB `LLIF` blob. Zone payload records (`tadR`/`gfxt`/`xtrc`/`pmas`/…): framing **unknown** |
-| `.scw` **LRTC** (global/boot/character) | `Data/GlobScen.scw`, `Data/LoadOnce.scw`, `Data/Player/{Char,Foll}_*.scw` (24) | [scw.md §LRTC](scw.md) | same | Header + first `COHS` index chunk decoded; walk stops at 0x60 — deeper chunk stream **unknown** |
+| `.scw` **COTS** (mission scene) | `Data/Game/<lvl>/<lvl>NN.scw` (18 files) | [SCW spec](scw.md) | [`tools/scwdump.py`](../../tools/scwdump.py) | [observed: retail chunk inventory] TOC and all 211 nonempty RVWS regions walked. [unknown: framing beyond the region chain and resource payload layouts.] |
+| `.scw` **LRTC** (global/boot/character) | `Data/Game/GlobScen.scw`, `Data/LoadOnce.scw`, `Data/Player/{Char,Foll}_*.scw` (26 files total) | [SCW spec](scw.md) | same | [observed: retail chunk inventory] All streams walk to EOF. [unknown: resource payload layouts.] |
 | `.GEO` **MOEG** mesh | `Data/Game/fro/Ring.GEO` (only sample) | [geo-txw.md](geo-txw.md) | [`tools/geo2obj.py`](../../tools/geo2obj.py) | Fully decoded on the single sample: 16 B header, 0x20-stride verts (pos/nrm/uv), u32 count + u16 tris; exact size arithmetic. Multi-mesh/winding **unknown** |
 | `.txw` **TXW** texture bank | `Data/Game/fro/Ring.txw` (only sample) | [geo-txw.md](geo-txw.md) | [`tools/txw2png.py`](../../tools/txw2png.py) | Chunks `HEAD/TXHE/CLHE/TXDA/CLDA` + 80 B entries decoded; formats id 1=DXT1, 2=DXT3 verified visually (gold rune band + glow). Palettes/mips/other ids **unknown** |
 | `.avi` FMVs | `Data/Movies/*.avi` (21), `Data/Special/*.avi` (16) | [fmv-pipeline.md §Container](../analysis/fmv-pipeline.md) | (headers parsed ad hoc; no extractor needed — stock AVI) | Video-only DivX5 `DXGM` 512×480/448 23.976/29.97 fps, `00dc` + `idx1`; FMV audio lives in game banks, not the AVIs [observed] |
@@ -46,8 +46,7 @@ Copyrighted game data; never committed. Expected local set used by the specs:
 ## Cross-cutting unknowns (next targets)
 
 1. ~~`.pac` container (D6)~~ — **done** (retail ISOs; `docs/formats/pac.md`; remaining pac unknowns are minor: id-header, attrs, 4 B trailer).
-2. COTS zone-payload record framing; `igc_*_bank` audio internal format (likely the
-   missing FMV-audio answer from D3; `pmas`/`ONOS` tags suggest a sample directory).
-3. LRTC chunk stream beyond the first `COHS` index (affects GlobScen/LoadOnce/Player).
+2. [unknown: COTS tail framing and the internal format of `igc_*_bank` audio.]
+3. [unknown: `COHS` and `ONOS` resource payload layouts in COTS and LRTC.]
 4. Unpacked `ROTK.exe` → resolves `Input.ini` parsing, `.vid` question, output-format
    enums, `u32@0x04`, TXW entry filler fields (`docs/research/safe-disc.md` plan).

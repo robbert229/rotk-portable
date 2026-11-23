@@ -6,9 +6,9 @@ LRTC files (`Data/LoadOnce.scw`, `Data/Game/GlobScen.scw`, and the 24
 `Data/Player/*.scw` files) and 18 COTS mission files under `Data/Game/*/`.
 All multibyte integers below are little-endian.
 
-[observed: `scwdump.py --json` and `--chunks-csv`]
+[observed: `scwdump.py --json`, `--chunks-csv` and `--summary-csv`]
 [`scwdump.py`](../../tools/scwdump.py) prints the standalone LRTC chunk
-walk or the COTS TOC and aligned tag census. The corpus CSV inventories the
+walk or the COTS TOC and aligned tag census. The detailed inventory covers the
 bounded chunk streams in both families.
 
 ## LRTC header
@@ -128,21 +128,31 @@ nonzero page at 0x1180000. Its tail extends to EOF at 0x6340000.
 
 ## Chunk inventory
 
-[observed: `scw_chunks.csv`, retail walk] The inventory has 92,419 rows.
-The COTS portion contains 87,501 stream chunks, 211 RVWS headers, 18
-embedded LRTC headers, 18 COTS headers, and 36 inner TOC and leading LLIF
-chunks. The LRTC
-portion contains 4,609 stream chunks and 26 headers. Header rows give the
-header span. The inner COTS row spans its tag, TOC, and name pool up to the
-leading LLIF. COTS tails remain unclassified.
+[observed: [scw_chunk_summary.csv](../../re/corpus/scw_chunk_summary.csv) and the
+detailed retail walk] The inventory has 92,419 rows. Counts include structural
+headers. Root headers are at depth zero. The deepest rows in COTS belong to
+streams within embedded LRTC headers at depth four. Standalone LRTC files reach
+depth one and EOF. COTS walks cover the contiguous TOC regions and leave
+10,354,688–98,697,216 bytes per file. [unknown: framing of the COTS tails.]
 
-`path` is install-relative. `offset` and `parent` are absolute file offsets
-in hex. `size` is a decimal byte length and `index` is the zero-based
-ordinal within the stream, or the TOC ordinal for RVWS. A parent points
-to the header for the stream or TOC. Empty parents mark root rows.
-`notes` labels the observed payload tag, filler, or header role.
-Regenerate from the retail install with isolated Python.
+| Tag | COTS files | Standalone LRTC files | Total |
+|---|---:|---:|---:|
+| COTS | 36 | 0 | 36 |
+| LRTC | 18 | 26 | 44 |
+| RVWS | 211 | 0 | 211 |
+| COHS | 77,757 | 3,023 | 80,780 |
+| ONOS | 5,538 | 1,205 | 6,743 |
+| DDAP | 70 | 100 | 170 |
+| LLIF | 4,154 | 281 | 4,435 |
+| **Total** | **87,784** | **4,635** | **92,419** |
 
-```sh
-python3 -I tools/scwdump.py "$ROTK_GAME_DIR" --chunks-csv > out/scw_chunks.csv
-```
+`make scw-summary` regenerates the committed per-file CSV.
+`make scw-chunks` writes the detailed inventory to `out/corpus/scw_chunks.csv`.
+Set `ROTK_GAME_DIR` to choose the install.
+
+In the detailed CSV, `path` is install-relative. `offset` and `parent` are absolute
+file offsets in hex. `size` is a decimal byte length and `index` is the zero-based
+ordinal within the stream, or the TOC ordinal for RVWS. A parent points to the
+header for the stream or TOC. Empty parents mark root rows. `notes` labels the
+observed payload tag, filler, or header role. The inner COTS row spans its tag,
+TOC and name pool up to the leading LLIF.

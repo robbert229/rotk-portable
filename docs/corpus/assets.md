@@ -1,8 +1,9 @@
 # Installed asset index
 
 [observed: install rows in `re/corpus/manifest.csv` and their SHA-256-matched files.]
-The index contains 105 of the 120 manifest install rows. It identifies the 15 PE
-files by the DOS header and PE signature. The three CSVs share `path` and
+The index contains 105 of the 120 manifest install rows, including 44 SCWs
+and 37 AVIs. The 15 files with DOS and PE signatures are catalogued in
+[binaries.csv](../../re/corpus/binaries.csv). The three CSVs share `path` and
 `sha256` as join keys. Paths are relative to the game directory.
 
 | Format | Files |
@@ -55,15 +56,17 @@ their own count [unknown: content or audio role of individual cinematic records]
 The parallel record lists in `assets_scw.csv` preserve TOC order, with offsets
 and sizes in hex. Empty list positions preserve alignment with the TOC.
 Embedded names come from the RVWS/ELIF directory at each nonempty record
-offset. They can differ from the longer TOC names. The COTS chunk count covers
-the inner COTS TOC and LLIF. For standalone LRTC, `chunk_count` counts
+offset. They can differ from the longer TOC names. The asset index reports two top-level COTS entries per file, the inner TOC
+and its following LLIF. For standalone LRTC, `chunk_count` counts
 every stream chunk after the header and `walk_end` equals EOF in all 26
 files. Counts range from 9 to 758 and sum to 4,609 [observed: LRTC walks,
 `assets_scw.csv`]. The `cohs_index` column lists the two tagged words in
 each RDHS-prefixed COHS. [unknown: purpose of those words]
-[observed: `scw_chunks.csv`] The separate
-[chunk inventory](../../re/corpus/scw_chunks.csv) covers all 44 files,
-including the stream chunks in all 211 nonempty COTS TOC regions.
+[observed: `scw_chunk_summary.csv`] Across the 18 COTS files, all 211
+nonempty TOC regions contribute 87,501 stream chunks to the separate
+[SCW inventory](../formats/scw.md#chunk-inventory). The 26 standalone LRTC
+files and the COTS files together contribute 92,419 rows including headers.
+Run `make scw-chunks` to generate the detailed local inventory.
 
 | Mission | Zones | Missing slots | Named banks | Other cinematic records |
 |---|---:|---:|---:|---:|
@@ -168,7 +171,7 @@ The only 512×448 files are `Movies/attrfmv1.avi` and
   `assets_scw.csv`]. The offsets are useful landmarks for examining
   the rest of each file.
 - [Unknown: LRTC resource payload formats.] COHS and ONOS payloads start
-  with `RDHS`, `TADS`, or `tadR` [observed: `scw_chunks.csv`].
+  with `RDHS`, `TADS`, or `tadR` [observed: `out/corpus/scw_chunks.csv`].
   The TOC region walks use the same framing, with a nested LRTC header
   at file+0x10024 for each `initial_load` [observed: all 18 COTS missions].
 - [Unknown: TXHE byte at entry+0x41.] It is 7 for `ringglos` (format ID 2)

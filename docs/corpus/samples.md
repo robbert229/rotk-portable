@@ -41,6 +41,11 @@ temporary directories.
 
 ## Selection
 
+The selected paths and their rationale are curated in `samples.csv`.
+`make corpus-samples` refreshes their sizes and SHA-256 hashes from the
+current corpus manifest. `make samples` materialises local copies.
+
+
 Start with the smallest and largest file by byte size for each
 `detected_format` in `formats.csv`. Also take those endpoints within each
 non-PE variant below. Break size ties by ascending case-sensitive source
@@ -63,7 +68,7 @@ for the variant evidence.]
 | PE | 15 | 12,528–2,874,240 | Keep the complete catalogue from `SECDRV.SYS` to `ROTK.exe`. These files cover PE32 drivers, DLLs and executables, including the Rich-header checksum mismatch, packed overlay, delay imports, exports and debug records [observed: [binaries.md](binaries.md) and `formats.csv`]. |
 | RIFF/AVI | 5 | 51,200–64,032,768 | Group by codec, width, height and stream rate/scale. DXGM appears at 512×448 with 30000/1001 fps and at 512×480 with 24000/1001 or 30000/1001 fps [observed: `assets_avi.csv`]. |
 | SCW COTS | 10 | 26,345,472–116,981,760 | Group by presence of missing zone slots, named banks and other `igc_` records. Keep `pat01.scw` for the most TOC records and `pel02.scw` for the most named banks. The selected TOCs include record kinds 0–3 [observed: `assets_scw.csv`]. |
-| SCW LRTC | 6 | 65,536–5,505,024 | Keep `LoadOnce.scw` and `GlobScen.scw` individually and group the remaining packages by `Char_` and `Foll_` filenames [observed: `assets_scw.csv` paths]. [unknown: structural differences after the common COHS prefix.] |
+| SCW LRTC | 6 | 65,536–5,505,024 | Keep `LoadOnce.scw` and `GlobScen.scw` individually and group the remaining packages by `Char_` and `Foll_` filenames [observed: `assets_scw.csv` paths]. [unknown: resource payload layouts, see the [SCW inventory](../formats/scw.md#chunk-inventory).] |
 | TXW | 1 | 24,800 | The sole TXW, `Ring.txw`, includes both observed TXHE format IDs, 1 and 2 [observed: `assets.csv`]. |
 | XML | 5 | 897–7,971 | Group by root and element count. The set covers the registration config, 61-element dictionaries and the 63-element Swedish dictionary. Keep the Korean dictionary for multibyte UTF-8 text [observed: `assets.csv` XML tree summaries and bytes in `Support/ereg-dict-ko.xml`]. |
 | plain text | 4 | 364–18,638 | Keep the ASCII installer CSV, path list and EULA, plus the CP1252-compatible readme [observed: `assets.csv` encodings and line counts, and [misc.md](../formats/misc.md)]. |
