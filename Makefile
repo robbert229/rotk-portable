@@ -68,20 +68,28 @@ validate-dump:
 	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
 
 CORPUS_DIR := re/corpus
-CORPUS_OUTPUT ?= $(CORPUS_DIR)
-CORPUS_STEPS := corpus-manifest corpus-formats pecat assetindex filerefs libscan scw-summary corpus-samples
+CORPUS_STEPS := corpus-manifest corpus-formats pecat assetindex filerefs libscan
 CORPUS_CSVS := manifest.csv formats.csv binaries.csv pe_sections.csv pe_imports.csv \
 	assets.csv assets_avi.csv assets_scw.csv filerefs.csv listed_files.csv libraries.csv \
 	scw_chunk_summary.csv samples.csv
 CORPUS_PYTHON = $(PYTHON) -BI
 export ROTK_GAME_DIR
 
+corpus-manifest = $(CORPUS_PYTHON) tools/corpus.py --install-only --output "$(1)/manifest.csv"
+corpus-formats = $(CORPUS_PYTHON) tools/corpus_formats.py --manifest "$(1)/manifest.csv" --output "$(1)/formats.csv"
+pecat = $(CORPUS_PYTHON) tools/pecat.py --output-dir "$(1)"
+assetindex = $(CORPUS_PYTHON) tools/assetindex.py --manifest "$(1)/manifest.csv" --out-dir "$(1)"
+filerefs = $(CORPUS_PYTHON) tools/filerefs.py --output-dir "$(1)"
+libscan = $(CORPUS_PYTHON) tools/libscan.py --output "$(1)/libraries.csv"
+scw-summary = $(CORPUS_PYTHON) tools/scwdump.py --summary-csv > "$(2)"
+corpus-samples = $(CORPUS_PYTHON) tools/samples.py refresh --corpus-manifest "$(1)/manifest.csv" > "$(2)"
+
 .PHONY: corpus corpus-check $(CORPUS_STEPS)
 corpus corpus-check:
 	@set -eu; scratch=$$(mktemp -d); trap 'rm -rf "$$scratch"' EXIT; \
-	for step in $(CORPUS_STEPS); do \
-		$(MAKE) --no-print-directory "$$step" CORPUS_OUTPUT="$$scratch"; \
-	done; \
+	$(foreach step,$(CORPUS_STEPS),$(call $(step),$$scratch);) \
+	$(call scw-summary,$$scratch,$$scratch/scw_chunk_summary.csv); \
+	$(call corpus-samples,$$scratch,$$scratch/samples.csv); \
 	if [ "$@" = corpus ]; then \
 		for csv in $(CORPUS_CSVS); do \
 			mv "$$scratch/$$csv" "$(CORPUS_DIR)/$$csv"; \
@@ -97,35 +105,19 @@ corpus corpus-check:
 		echo "Corpus CSVs match HEAD."; \
 	fi
 
-corpus-manifest:
-	$(CORPUS_PYTHON) tools/corpus.py --install-only --output "$(CORPUS_OUTPUT)/manifest.csv"
+$(CORPUS_STEPS):
+	$(call $@,$(CORPUS_DIR))
 
-corpus-formats:
-	$(CORPUS_PYTHON) tools/corpus_formats.py --manifest "$(CORPUS_OUTPUT)/manifest.csv" \
-		--output "$(CORPUS_OUTPUT)/formats.csv"
-
-pecat:
-	$(CORPUS_PYTHON) tools/pecat.py --output-dir "$(CORPUS_OUTPUT)"
-
-assetindex:
-	$(CORPUS_PYTHON) tools/assetindex.py --manifest "$(CORPUS_OUTPUT)/manifest.csv" \
-		--out-dir "$(CORPUS_OUTPUT)"
-
-filerefs:
-	$(CORPUS_PYTHON) tools/filerefs.py --output-dir "$(CORPUS_OUTPUT)"
-
-libscan:
-	$(CORPUS_PYTHON) tools/libscan.py --output "$(CORPUS_OUTPUT)/libraries.csv"
-
+.PHONY: scw-summary corpus-samples
 scw-summary:
 	@set -eu; tmp=$$(mktemp); trap 'rm -f "$$tmp"' EXIT; \
-	$(CORPUS_PYTHON) tools/scwdump.py --summary-csv > "$$tmp"; \
-	mv "$$tmp" "$(CORPUS_OUTPUT)/scw_chunk_summary.csv"
+	$(call scw-summary,$(CORPUS_DIR),$$tmp); \
+	mv "$$tmp" "$(CORPUS_DIR)/scw_chunk_summary.csv"
 
 corpus-samples:
 	@set -eu; tmp=$$(mktemp); trap 'rm -f "$$tmp"' EXIT; \
-	$(CORPUS_PYTHON) tools/samples.py refresh --corpus-manifest "$(CORPUS_OUTPUT)/manifest.csv" > "$$tmp"; \
-	mv "$$tmp" "$(CORPUS_OUTPUT)/samples.csv"
+	$(call corpus-samples,$(CORPUS_DIR),$$tmp); \
+	mv "$$tmp" "$(CORPUS_DIR)/samples.csv"
 
 .PHONY: scw-chunks corpus-verify refs samples
 scw-chunks:
