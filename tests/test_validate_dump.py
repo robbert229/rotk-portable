@@ -78,18 +78,15 @@ class ValidatorTests(unittest.TestCase):
                 ("x86", 0x84, b"\x64\x86"),
                 ("entry_in_text", OPTIONAL + 16, struct.pack("<I", 0x3000)),
                 ("text_entropy", 0x400, bytes(range(256)) * 2),
-                ("imports", 0x6a0, b"fake"),
-                ("imports", 0x60c, struct.pack("<I", 0x6000)),
-                ("file_size", 0xe00, b"")):
+                ("imports", 0x704, b"fake"),
+                ("imports", 0x60c, struct.pack("<I", 0x6000))):
             with self.subTest(check=check, offset=offset):
                 data = fixture()
-                if value:
-                    data[offset:offset + len(value)] = value
-                else:
-                    del data[offset:]
+                data[offset:offset + len(value)] = value
                 status, report = self.validate(data)
                 self.assertEqual(status, 1)
                 self.assertFalse(report["checks"][check]["ok"])
+                self.assertEqual(self.validate(data, "--pre-repair")[0], 1)
                 self.assertEqual(self.validate(data, "--structural")[0], 0)
 
     def test_residual_branch_counts(self):
@@ -100,15 +97,66 @@ class ValidatorTests(unittest.TestCase):
                          b"\xff\x25", 0x402140, b"\xff\x15", 0x402144)
         struct.pack_into("<I", data, 0x740, 0x405000)
         status, report = self.validate(data)
+        self.assertEqual(status, 1)
+        references = report["checks"]["stub_references"]
+        self.assertFalse(references["ok"])
+        self.assertEqual(references["total"], 4)
+        self.assertEqual(references["rel32"], 2)
+        self.assertEqual(references["iat_indirect"], 2)
+        self.assertEqual(references["references"], [
+            {"source_rva": "0x1000", "kind": "call_rel32",
+             "target_rva": "0x3000", "target_section": "stxt371"},
+            {"source_rva": "0x1005", "kind": "jmp_rel32",
+             "target_rva": "0x4000", "target_section": "stxt774"},
+            {"source_rva": "0x100a", "kind": "call_iat_indirect",
+             "target_rva": "0x5000", "target_section": "        "},
+            {"source_rva": "0x1010", "kind": "jmp_iat_indirect",
+             "target_rva": "0x5000", "target_section": "        "},
+        ])
+        status, report = self.validate(data, "--pre-repair")
         self.assertEqual(status, 0)
-        self.assertEqual(report["checks"]["stub_references"],
-                         {"ok": True, "rel32": 2, "iat_indirect": 2, "total": 4})
+        self.assertEqual(report["mode"], "pre-repair")
+        self.assertEqual(report["checks"]["stub_references"], {**references, "ok": True})
+
+    def test_reference_list_cap(self):
+        data = fixture()
+        for index in range(40):
+            offset = 5 * index
+            struct.pack_into("<Bi", data, 0x400 + offset, 0xe8, 0x3000 - 0x1005 - offset)
+        status, report = self.validate(data)
+        self.assertEqual(status, 1)
+        references = report["checks"]["stub_references"]
+        self.assertEqual(references["total"], 40)
+        self.assertEqual(len(references["references"]), 32)
+
+    def test_file_size_is_advisory(self):
+        for data in (fixture()[:0xe00], fixture() + bytes(1024 * 1024)):
+            with self.subTest(size=len(data)):
+                status, report = self.validate(data)
+                self.assertEqual(status, 0)
+                self.assertEqual(report["checks"]["file_size"], {
+                    "ok": True, "bytes": len(data), "reference_bytes": 2_874_232,
+                    "delta_bytes": len(data) - 2_874_232,
+                })
+
+    def test_advisory_imports_can_be_absent(self):
+        data = fixture()
+        data[0x600:0x628] = data[0x664:0x68c]
+        data[0x628:0x6a0] = bytes(120)
+        status, report = self.validate(data)
+        self.assertEqual(status, 0)
+        self.assertEqual(report["checks"]["imports"], {
+            "ok": True, "dlls": ["kernel32.dll", "user32.dll"], "missing": [],
+            "advisory_missing": ["d3d8.dll", "dinput8.dll", "divxmedialib.dll",
+                                 "dsound.dll", "eax.dll"],
+        })
 
     @unittest.skipUnless(GAME.is_dir(), "retail game directory unavailable")
     def test_retail_packed(self):
         status, report = run(GAME / "ROTK.exe")
         self.assertEqual(status, 1)
-        for check in ("entry_in_text", "text_entropy", "imports"):
+        self.assertTrue(report["checks"]["file_size"]["ok"])
+        for check in ("entry_in_text", "text_entropy"):
             self.assertFalse(report["checks"][check]["ok"])
 
     @unittest.skipUnless(GAME.is_dir(), "retail game directory unavailable")

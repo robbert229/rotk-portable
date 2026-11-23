@@ -62,4 +62,4 @@ ROTK_UNPACKED_EXE ?= out/unpacked/ROTK_unpacked.exe
 
 .PHONY: validate-dump
 validate-dump:
-	@$(PYTHON) -I tools/validate_dump.py "$(ROTK_UNPACKED_EXE)"
+	@$(PYTHON) -I tools/validate_dump.py $(VALIDATE_FLAGS) "$(ROTK_UNPACKED_EXE)"
