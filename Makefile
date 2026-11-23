@@ -71,3 +71,7 @@ corpus-formats:
 .PHONY: pecat
 pecat:
 	ROTK_GAME_DIR="$(ROTK_GAME_DIR)" $(PYTHON) -I tools/pecat.py
+
+.PHONY: assetindex
+assetindex:
+	$(PYTHON) -BI tools/assetindex.py --game-dir "$(ROTK_GAME_DIR)"
