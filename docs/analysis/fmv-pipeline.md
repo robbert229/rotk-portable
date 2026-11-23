@@ -7,21 +7,17 @@ How `ROTK.exe` drives the DivX stack (`DivxMediaLib.dll` → `FileParser.dll` +
 
 ## TL;DR
 
-The game **late-binds** `DivxMediaLib.dll` (via `GetModuleHandleA`/`GetProcAddress` — the
-SafeDisc outer import table only exposes those two KERNEL32 thunks), and drives playback in
-a **synchronous pull model** with 12 imported functions: it opens the file, queries content
-info, registers an output buffer + pixel format, then per displayed frame calls
-`DivxNextFrame` + `DivxDoFrame`. It never uses the library's threaded transport
-(`DivxPlay/Pause/Resume/Stop` are **not** imported). FMV `.avi` files on disk are
-**video-only DivX 5-GMC**; the game's audio (incl. FMV audio) runs through its own
-EAX/DirectSound + MSACM stack.
+The packed executable declares 12 delay-load imports from `DivxMediaLib.dll`,
+including open/close, buffer and format setup, and the two frame functions.
+The visible DivX entries omit the threaded transport API
+[observed: re/corpus/pe_imports.csv]. [inferred: synchronous frame-pull playback.]
+All 37 retail AVIs contain one `DXGM` video stream and zero audio streams
+[observed: re/corpus/assets_avi.csv]. [unknown: FMV audio source and playback path.]
 
 ## Call sequence
 
 ```
-game start (once)
-  LoadLibrary("DivxMediaLib.dll")                      [inferred: name string observed; LoadLibrary not
-                                                       visible in SafeDisc outer IAT — late-bind pattern]
+setup                                                 [inferred: timing]
   DivxSetNumAudVidBuffers(nvid, naud)                  [observed-import] → FileParser divxSetAudVidBuffers
 
 per FMV play ("Data/Movies/%s.avi")                    [observed: format string in ROTK.exe]
@@ -31,7 +27,7 @@ per FMV play ("Data/Movies/%s.avi")                    [observed: format string 
   DivxSetOutputVideoFormat(h, fmt)                     [observed-import] → decoder SetOutputFormat(slot,fmt,w,h) [observed decompile]
   DivxSetVideoBuffer(h, dst)                           [observed-import] stores dst at session-slot+0x32C [observed decompile]
   DivxModeSet(…) / DivxProfile(…)                      [observed-import; semantics unknown]
-  loop every vsync (~23.976/29.97 fps)                 [observed: strh rate/scale]
+  frame loop                                          [inferred: timing and call order]
       DivxNextFrame(h)  ─────────────────────────────► divxFrameReady/divxReadFrame
       │                                                 → divxFillVideoDecodeBuffer   [inferred: import edges, dossier]
       │                                                 → DivxDecode(slot,out,in)     [observed: DivxMediaLib imports DivxDecode]
@@ -41,32 +37,31 @@ per FMV play ("Data/Movies/%s.avi")                    [observed: format string 
   CloseDivxFile(h)                                     [observed-import] → splitter + decoder teardown
 ```
 
-Tagged evidence for each arrow is in the sections below.
+The sketch combines delay-load names [observed: re/corpus/pe_imports.csv]
+with callee-side observations and inferred caller sequencing.
 
 ## Caller side (ROTK.exe) — evidence
 
-`ROTK.exe` (SafeDisc-packed; outer IAT = 6 DLLs / 10 thunks incl. only
-`GetModuleHandleA`, `GetProcAddress` from KERNEL32 [observed: pefile import dump]).
-The DivX bindings are therefore done at runtime with `GetProcAddress` [inferred from
-SafeDisc packing + contiguous hint/name block].
+The packed executable exposes 10 ordinary imports across six DLLs and 21 delay-load
+imports across five DLLs. `KERNEL32.dll` supplies five ordinary imports, including
+`GetModuleHandleA` and `GetProcAddress`. All 12 DivX imports are declared in the
+delay-load directory under `DivxMediaLib.dll`
+[observed: re/corpus/binaries.csv, re/corpus/pe_imports.csv]. This supersedes the
+string-only interpretation that the game binds the twelve functions manually.
 
-Contiguous hint/name block in `.rdata` (string-cache lines 5643–5667, rebuildable with
-`strings -n 5 ROTK.exe`) — **observed**:
-
-| String | Role |
+| Delay-load imports [observed: re/corpus/pe_imports.csv] | Role [inferred] |
 |---|---|
-| `DivxMediaLib.dll` | module to late-bind (only DivX DLL named on the game side; `FileParser.dll`/`DivxDecoder.dll` names never appear in the exe — the library owns them [observed]) |
-| `OpenDivxFile`, `CloseDivxFile` | session open/close |
-| `DivxGetContentInfo` | mode/dims query |
-| `DivxSetVideoBuffer`, `DivxSetOutputVideoFormat` | destination registration |
-| `DivxNextFrame`, `DivxDoFrame` | per-frame pull + present |
-| `DivxModeSet`, `DivxProfile`, `DivxSetNumAudVidBuffers` | config |
-| `DivxGetLastError`, `DivxFormatErrorMessage` | error reporting |
+| `OpenDivxFile`, `CloseDivxFile` | Session open/close |
+| `DivxGetContentInfo` | Mode/dimensions query |
+| `DivxSetVideoBuffer`, `DivxSetOutputVideoFormat` | Destination registration |
+| `DivxNextFrame`, `DivxDoFrame` | Per-frame pull and presentation |
+| `DivxModeSet`, `DivxProfile`, `DivxSetNumAudVidBuffers` | Configuration |
+| `DivxGetLastError`, `DivxFormatErrorMessage` | Error reporting |
 
-Exactly **12** `Divx*` names — notably **absent**: `DivxPlay`, `DivxPause`, `DivxResume`,
-`DivxStop`, `DivxNextAudioChunk`, `DivxGotoFrame*`, `DivxSetCallBackFn`,
-`DivxSetAudioBuffer`, `DivxGetSDKVersion` [observed]. ⇒ the game runs its own pacing loop
-(pull model), not the library's threaded player [inferred, high confidence].
+The visible directories omit `DivxPlay`, `DivxPause`, `DivxResume`, `DivxStop`,
+`DivxNextAudioChunk`, `DivxGotoFrame*`, `DivxSetCallBackFn`, `DivxSetAudioBuffer`
+and `DivxGetSDKVersion` [observed: re/corpus/pe_imports.csv]. The frame entries
+suggest that the game paces playback [inferred].
 
 Supporting source-path strings [observed]:
 `\EAThirdPerson\lotr\rotk\code\LL\LLVideo.c`,
@@ -75,34 +70,36 @@ Supporting source-path strings [observed]:
 
 FMV path + names [observed]: `Data/Movies/%s`, `data\movies\blakfmv1.vid`, FMV ids
 `ENDFMV1 OSGIFMV2 PAT1FMV2 GATEFMV2 MTYDFMV2 HELMFMV2 ISENFMV1 ATTRFMV1 …`
-(matching `Data/Movies/*.avi` stems). The `.vid` extension string has no on-disk match —
-**unknown** whether it is a legacy alias or an unfinished asset path.
+(matching `Data/Movies/*.avi` stems). The `.vid` string has no install match [observed: re/corpus/filerefs.csv].
+[unknown: whether it is a legacy alias or an unfinished asset path.]
 
 ## Container facts (measured from the shipped FMVs) [observed]
 
-Parsed `RIFF/AVI ` headers of `Data/Movies/*.avi` (21 files) + `Data/Special/*.avi` (16):
+Parsed `RIFF/AVI ` headers of `Data/Movies/*.avi` (21 files) and `Data/Special/*.avi`
+(16) [observed: re/corpus/assets_avi.csv, supplemented by the earlier AVI scan]:
 
 | Field | Value |
 |---|---|
 | `strh` fccType / fccHandler | `vids` / **`DXGM`** (DivX 5.x w/ GMC family) |
 | `strf` | BITMAPINFOHEADER 40 B, `biCompression='DXGM'`, bpp=24 |
-| Resolution | 512×480 (cutscenes) or 512×448 (speech bubbles in `Special/`) |
-| Frame rate | 24000/1001 = 23.976 or 30000/1001 = 29.97 fps |
+| Resolution | 512×480 in 35 files. `Movies/attrfmv1.avi` and `Special/makespc1.avi` are 512×448 |
+| Frame rate | 30000/1001 fps in the two 512×448 files and `Movies/rtsvid.avi`. The other 34 use 24000/1001 fps |
 | Streams | **video only** — zero audio `strf`; `movi` contains only `00dc` chunks (e.g. endfmv1.avi: 2399 chunks = strh length 2399) |
-| Index | `idx1` present at EOF (splitter string: "operation needs an index") |
+| Index | `idx1` present in every declared RIFF form. A final `JUNK` chunk follows the declared form in every file (84–2,042 bytes including its header) |
 
-⇒ `FileParser.dll`'s audio-side exports (`divxLocateAudioFrame`,
-`divxFillAudioDecodeBuffer`) are dead weight for ROTK's shipped FMVs [observed + inferred].
+[inferred: the shipped AVIs give the splitter’s audio-side exports no embedded audio to read.]
 
 ## Audio path
 
-- Game imports `MSACM32.dll` `acmStreamOpen/PrepareHeader/Convert/Size/Close` and
-  `DSOUND.dll`, plus `EAXDirectSoundCreate8` [observed: ROTK.exe strings], and its audio
-  engine logs `audio: play ig stream`, `prime vo`, `play primed by name` [observed].
-- FMV `.avi`s carry **no audio** [observed]. FMV audio is therefore stored elsewhere —
-  most plausibly in the `.scw` sound banks (`Data/LoadOnce.scw` etc.) and decoded via
-  ACM [inferred; exact container = **unknown**, a target of the D5 `.scw` work].
-- `DivxNextAudioChunk` exists in DivxMediaLib but is not imported by the game [observed].
+- The executable declares delay-load imports `acmStreamOpen`, `acmStreamSize`,
+  `acmStreamPrepareHeader`, `acmStreamConvert`, `acmStreamUnprepareHeader` and
+  `acmStreamClose` from `MSACM32.dll`, plus ordinal `#11` from `DSOUND.dll`
+  [observed: re/corpus/pe_imports.csv]. `EAXDirectSoundCreate8` is a string
+  fingerprint in `ROTK.exe` [observed: re/corpus/libraries.csv].
+- The shipped AVIs have no audio streams [observed: re/corpus/assets_avi.csv]. The
+  earlier `.scw` sound-bank and ACM explanation remains a hypothesis
+  [inferred: candidate source and decoder from bank names and the ACM imports].
+  [unknown: exact FMV audio container, codec and call path.]
 
 ## Codec / pixel-format model
 
@@ -111,12 +108,12 @@ Parsed `RIFF/AVI ` headers of `Data/Movies/*.avi` (21 files) + `Data/Special/*.a
   [observed: decompile] ⇒ at least two output formats; which FourCC/RGB layout `fmt`
   selects is **unknown** (runtime trace or deeper decompile needed).
 - `DivxDecode(slot, out, in)` = dispatcher op 5; init = op 1 [observed: dossier].
-- Decoder core: 467 functions, 232 KB `.text`, no branding strings — codec lineage
-  **unknown** (see dossier).
+- Decoder core: 467 functions, 232 KB `.text`, codec lineage **unknown** (see dossier). Raw section size is
+  corroborated by re/corpus/pe_sections.csv.
 
 ## Known gaps
 
-1. Exact `GetProcAddress` site names/order — needs unpacked exe (`docs/research/safe-disc.md`).
+1. Exact caller order and delay-load resolution sites in the unpacked executable.
 2. FMV audio container + codec (ACM payload location) — likely resolved by D5 `.scw` spec.
 3. Meaning of `fmt` values and `DivxModeSet`/`DivxProfile` arguments.
 4. Whether `.vid` files exist on the original disc (with the ISO for D6 this is checkable).
@@ -129,5 +126,6 @@ Parsed `RIFF/AVI ` headers of `Data/Movies/*.avi` (21 files) + `Data/Special/*.a
 | `ev_7bbf0688…` | FileParser overview, AVI strings, splitter/bufmanager decompiles |
 | `ev_b570f9be…` | DivxDecoder overview + 4-export decompiles |
 | `ev_4ec57b43…` | ROTK.exe PE overview (SafeDisc layout, linker 7.00) |
-| pefile dump (this session) | outer IAT (10 thunks incl. GetProcAddress), 3-DLL DivX import graph of the middleware |
+| [PE imports](../../re/corpus/pe_imports.csv) | Ordinary and delay-load imports for the executable and middleware |
+| [AVI inventory](../../re/corpus/assets_avi.csv) | Stream, timing, dimension, index and RIFF extent data for all 37 AVIs |
 | AVI header scan (this session) | strh/strf/movi/idx1 table above, all 37 shipped FMVs |
